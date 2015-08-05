@@ -10,6 +10,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.bupt.jdbc.SelectWeibo;
 
@@ -25,27 +27,19 @@ public class AtuserCircle {
 	 * @return	过滤并结构化的at用户数据
 	 */
 	private ArrayList<String> filterAtuserData(String atuserString){
-		ArrayList<String> resultlist = new ArrayList<String>();
-		if(atuserString!=""){
-			if(atuserString.startsWith("@")){
-				if(atuserString.contains("O")){
-					resultlist.add(atuserString.substring(1,atuserString.indexOf(" ")));
-					return resultlist;
-				}else{
-					String tmp = atuserString.replace(" ", "");
-					StringBuffer tmpbuffer = new StringBuffer(tmp);
-					tmpbuffer.deleteCharAt(0);
-					tmp = tmpbuffer.toString();
-					Collections.addAll(resultlist, tmp.split("@"));
-					return resultlist;
-				}
-			}else{
-				return null;
-			}
-		}else{
-			return null;
+	ArrayList<String> resultlist = new ArrayList<String>();
+	Pattern p = Pattern.compile("(@(.*?) |@(.*))");   //注意正则表达式或的使用要配合括号使用    
+	if(atuserString!=""){
+		Matcher m = p.matcher(atuserString);
+		while(m.find()){
+              resultlist.add(m.group(1));
 		}
+		return resultlist;
+	}else{
+		return null;
 	}
+}
+	
 	
 	/**
 	 * 将结果排序，获取topN的排序结果
@@ -114,9 +108,12 @@ public class AtuserCircle {
 	public static void main(String[] args) {
 		
 		try {
-			 HashMap<String, HashMap<String, Integer>> test_map = new HashMap<String, HashMap<String, Integer>>();
-			 test_map = new AtuserCircle().getTopAtUser("2728266823", 5);
-			 System.out.println(test_map);
+//			 HashMap<String, HashMap<String, Integer>> test_map = new HashMap<String, HashMap<String, Integer>>();
+//			 test_map = new AtuserCircle().getTopAtUser("2728266823", 5);
+//			 System.out.println(test_map);
+//			ArrayList<String> a = new AtuserCircle().filterAtuserData("#扬州中国国际旅行社荣登扬州市诚信企业红榜 # @扬州扬子江集团官方微博");   //@TopSeat-阿浩 @TopSeat-Jeff @小炎ismonster
+//			System.out.println(a);
+			
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
