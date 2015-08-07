@@ -19,7 +19,7 @@ public class WordCompute {
 				for(int j = 0;j<sentimentWords.size();j++){
 					if(sentiWords.get(i).equals(sentimentWords.get(j).getPhrase())){
 						if(sentimentWords.get(j).getPolar()==1||sentimentWords.get(j).getPolar()==0){		
-							score += sentimentWords.get(j).getPower()/9;	                                    //该词语为褒义1或中性0
+							score += sentimentWords.get(j).getPower()/9;	                                    //该词语为褒义1或中性0，未考虑褒贬双意
 							//System.out.println("word:"+sentimentWords.get(j).getPower()/9+"index:"+j+1);
 						}        
 						if(sentimentWords.get(j).getPolar()==2||sentimentWords.get(j).getPolar()==0){           //该词语为贬义2或中性0
@@ -46,9 +46,11 @@ public class WordCompute {
 	public static double calNonSentiWord(Vector<String> nonSentiWords,ArrayList<BaseWordItem> positiveWords,ArrayList<BaseWordItem> negativeWords,ArrayList<SentimentWordItem> sentimentWords){
 		double score = 0;      
 		if(nonSentiWords.size()!=0){
+			System.out.println(nonSentiWords.size());
 			for(int i = 0;i<nonSentiWords.size();i++){
 				score += new HowNetSimilarity().getWordAvgDSO(nonSentiWords.get(i), positiveWords, negativeWords, sentimentWords);		
 			}
+			score /= nonSentiWords.size();
 		}
 		return score;
 	}
