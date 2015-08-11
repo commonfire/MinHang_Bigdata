@@ -1,9 +1,8 @@
 package edu.bupt.soft;
 
 /**
- * 基准词词库的每个条目
  * @author DELL
- *
+ * 基准词词库的每个条目
  */
 public class BaseWordItem {
 	private float power;

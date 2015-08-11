@@ -1,13 +1,16 @@
 package edu.bupt.soft;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.ansj.test.WordSegAnsj;
 
 import edu.bupt.jdbc.JDBCConnect;
+import edu.bupt.jdbc.SQLHelper;
 import edu.bupt.jdbc.SelectOperation;
 
 
@@ -22,40 +25,109 @@ public class OrientationCompute {
     public static ArrayList<SentimentWordItem> sentimentWords;   //情感词库词语
     public static ArrayList<BaseWordItem> positiveWords;         //基准褒义词词语
     public static ArrayList<BaseWordItem> negativeWords;         //基准贬义词词语
+    public static HashMap<String, Float> emoticons;
     
     //加载词库，只需要一次
     static{
     	 loadEmotionDic();       //加载情感词库
     	 loadPositiveWords();    //加载褒义基准词词库
     	 loadNegativeWords();    //加载贬义基准词词库
+    	 loadEmoticons();        //加载表情基准库
     }
     
     /**
      * 加载情感词库
      */
     private static void loadEmotionDic(){
-    	String sql1 = "select * from emotion_dictionary";
-		ResultSet rs1 = SelectOperation.selectOnes(sql1);
-		sentimentWords = new SentenceProcessor().getSentimentWords(rs1);          //获得情感词库中情感单词
+    	Connection conn = SQLHelper.getConnection();
+    	String sql = "select * from emotion_dictionary";
+		ResultSet rs;
+		try {
+			rs = SQLHelper.executeQuery(sql, null, conn);
+			sentimentWords = new SentenceProcessor().getSentimentWords(rs);          //获得情感词库中情感单词
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
     }
     
     /**
      * 加载褒义基准词词库
      */
     private static void loadPositiveWords(){
-    	String sql2 = "select * from positive_baseword";
-		ResultSet rs2 = SelectOperation.selectOnes(sql2);
-		positiveWords =  new SentenceProcessor().getBaseWords(rs2);                   //获得褒义基准词库中单词
-
+    	Connection conn = SQLHelper.getConnection();
+    	String sql = "select * from positive_baseword";
+    	ResultSet rs;
+		try {
+			rs = SQLHelper.executeQuery(sql, null, conn);
+			positiveWords =  new SentenceProcessor().getBaseWords(rs);                   //获得褒义基准词库中单词
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
     }
+    
     
     /**
      * 加载贬义基准词词库
      */
     private static void loadNegativeWords(){
-    	String sql3 = "select * from negative_baseword";
-		ResultSet rs3 = SelectOperation.selectOnes(sql3);
-		negativeWords =  new SentenceProcessor().getBaseWords(rs3);      //获得贬义基准词库中单词
+    	Connection conn = SQLHelper.getConnection();
+    	String sql = "select * from negative_baseword";
+    	ResultSet rs;
+		try {
+			rs = SQLHelper.executeQuery(sql, null, conn);
+			negativeWords =  new SentenceProcessor().getBaseWords(rs);                 //获得贬义基准词库中单词
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}     
+
+    }
+    
+    /**
+     * 加载表情基准库
+     */
+    private static void loadEmoticons(){
+    	Connection conn = SQLHelper.getConnection();
+    	String sql = "select * from emoticon_baseword";
+    	ResultSet rs;
+		try {
+			rs = SQLHelper.executeQuery(sql, null, conn);
+			emoticons =  new SentenceProcessor().getEmoticons(rs);               //获得贬义基准词库中单词
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}     
 
     }
 
@@ -265,32 +337,27 @@ public class OrientationCompute {
 		//文本倾向值算法2的主体实现
 		if(sentimentList.size()==0){                    //文本中无观点句
 			if(nonSentimentList.size()!=0){
-				System.out.println("case_1_nonSentiment");
+				//case_1_nonSentiment
 				for(int i = 0;i < nonSentimentList.size();i++){
 					 score += new OrientationCompute().calcDSOofSentence3(nonSentimentList.get(i), sentimentWords, positiveWords, negativeWords);
 				}
 				result = score/nonSentimentList.size();
 			}else{
-				System.out.println("case_2_NULL");
-				result = 0;   //此时既没有观点句同时也没有非观点句，即为空
+				//case_2_NULL
+				result = 0;   //此时既没有观点句同时也没有非观点句，即为空时结果为0
 			}
 			
 		}else if(nonSentimentList.size()==0){           //文本中只有观点句，直接计算观点句情感倾向平均值作为文本情感倾向
-			System.out.println("case_3_sentiment");
+			//case_3_sentiment
 			for(int i = 0;i < sentimentList.size();i++){
 				 score += new OrientationCompute().calcDSOofSentence(sentimentList.get(i), sentimentWords);
 			}
 			result = score/sentimentList.size();
 		}else{
-			System.out.println("case_4_sentiment&nonSentiment");
-			double[] iniScoreSentiment = new double[sentimentList.size()];                                          //观点句子初始值
+			//case_4_sentiment&nonSentiment
 			double[] iniScoreNonSentiment = new double[nonSentimentList.size()];                                    //非观点句子初始值
-			//计算每个观点句子的倾向值，作为观点句子初始值
-			for(int i = 0;i < sentimentList.size();i++){ 
-				 iniScoreSentiment[i] = new OrientationCompute().calcDSOofSentence(sentimentList.get(i), sentimentWords);			
-			}
 			
-			//计算每个非观点句子的倾向值，作为观点句子初始值
+			//计算每个非观点句子的倾向值，作为非观点句子初始值
 			//TODO 词语相似度算法更改处
 			for(int i = 0;i < nonSentimentList.size();i++){
 				iniScoreNonSentiment[i] = new OrientationCompute().calcDSOofSentence3(nonSentimentList.get(i), sentimentWords, positiveWords, negativeWords);
@@ -299,7 +366,7 @@ public class OrientationCompute {
 			for(int i = 0;i < sentimentList.size();i++){
 				double value = 0;
 				for(int j = 0;j < nonSentimentList.size();j++){
-					double distance = new OrientationCompute().sentenceDistance(sentimentList.get(i), nonSentimentList.get(j));  //观点句与非观点句的距离
+					double distance = new OrientationCompute().sentenceDistance(sentimentList.get(i), nonSentimentList.get(j));  //计算观点句与非观点句的距离
 					double weight = Math.exp(BETA*distance);
 					value += iniScoreNonSentiment[j] * weight;
 				}
@@ -316,7 +383,6 @@ public class OrientationCompute {
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception {
-		
 	}
 
 }

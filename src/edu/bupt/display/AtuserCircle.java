@@ -85,7 +85,7 @@ public class AtuserCircle {
 			 	while(rs.next()){
 			 		String atuser = rs.getString("atuser");
 			 		atuser_list = this.filterAtuserData(atuser);
-			 		if(atuser_list!=null){
+			 		if(atuser_list!=null){ 
 			 			for(String atuser2:atuser_list){
 			 				if(inner_map.containsKey(atuser2)){
 			 					inner_map.put(atuser2, inner_map.get(atuser2)+1);  //注意不可以使用++，其只对变量有作用
@@ -109,7 +109,7 @@ public class AtuserCircle {
 		
 		try {
 //			 HashMap<String, HashMap<String, Integer>> test_map = new HashMap<String, HashMap<String, Integer>>();
-//			 test_map = new AtuserCircle().getTopAtUser("2728266823", 5);
+//			 test_map = new AtuserCircle().getTopAtUser("1763409631", 5);
 //			 System.out.println(test_map);
 //			ArrayList<String> a = new AtuserCircle().filterAtuserData("#扬州中国国际旅行社荣登扬州市诚信企业红榜 # @扬州扬子江集团官方微博");   //@TopSeat-阿浩 @TopSeat-Jeff @小炎ismonster
 //			System.out.println(a);

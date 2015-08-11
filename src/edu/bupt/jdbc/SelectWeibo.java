@@ -12,7 +12,7 @@ public class SelectWeibo {
 		List<Object> list = new ArrayList<Object>();
 		list.add(userID);
 		//ResultSet rs = SelectOperation.selectOnes("select id,content,time,atuser,repostuser,userID from t_user_weibo where userID = ?",list);	
-		ResultSet rs = SelectOperation.selectOnes("select id,content,time,userID from t_user_weibo where userID = ?",list);	
+		ResultSet rs = SelectOperation.selectOnes("select id,content,time,userID,atuser from t_user_weibo where userID = ?",list);	
 	    return rs;
 	}
 	

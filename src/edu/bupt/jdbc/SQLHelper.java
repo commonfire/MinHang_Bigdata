@@ -113,7 +113,6 @@ public class SQLHelper {
     public static ResultSet executeQuery(String sql, String[] parameters,Connection conn) throws SQLException {      
         ResultSet rs = null;
         try {
-            conn = getConnection();
             ps = conn.prepareStatement(sql);
             if (parameters != null) {
                 for (int i = 0; i < parameters.length; i++) {

@@ -1,9 +1,8 @@
 package edu.bupt.soft;
 
 /**
- * 情感词词库的每个条目
  * @author DELL
- *
+ * 情感词词库的每个条目
  */
 public class SentimentWordItem {
 	private int polar;

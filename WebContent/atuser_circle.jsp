@@ -7,8 +7,8 @@
   
 <%
      HashMap<String, HashMap<String, Integer>> outer_map = new HashMap<String, HashMap<String, Integer>>();
-     outer_map = new AtuserCircle().getTopAtUser("2728266823", 5);
-     HashMap<String, Integer> inner_map = outer_map.get("2728266823");
+     outer_map = new AtuserCircle().getTopAtUser("1763409631", 5);
+     HashMap<String, Integer> inner_map = outer_map.get("1763409631");
      String[] atuser = new String[5];
      Integer[] atcounter = new Integer[5];
      Integer i = 0;

@@ -4,6 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class SentenceProcessor {
 
@@ -73,6 +75,25 @@ public class SentenceProcessor {
 	
 	
 	/**
+	 * 访问数据库进行数据提取，返回表情基准库
+	 * @param rs   数据库查询结果集
+	 * @return     从数据库提取的基准表情库
+	 */
+	public HashMap<String, Float> getEmoticons(ResultSet rs){
+		HashMap<String, Float> emoticonMap = new HashMap<String, Float>();
+		try {
+			   while(rs.next()){
+				   emoticonMap.put(rs.getString("emoticon"),rs.getFloat("power"));
+			   }
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return emoticonMap;
+	}
+	
+	
+	
+	/**
 	 * 输入一个句子列表，返回观点句子列表
 	 * @param sentenceList    输入句子列表  
 	 * @param sentimentWords  输入情感词表
@@ -114,7 +135,7 @@ public class SentenceProcessor {
 	}
 	
 	/**
-	 * 输入一个句子，返回判断该句是否为情感句结果
+	 * 输入一个句子，返回判断该句是否为情感句结果（用于网页前端的内容）
 	 * @param sentence        输入句子 
 	 * @param sentimentWords  输入情感词表
 	 * @return                返回判断该句是否为情感句结果

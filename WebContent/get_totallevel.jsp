@@ -78,7 +78,7 @@
                 		            name:'<%=userAlias2%>',
                 		            type:'gauge',
                 		            center : ['50%', '50%'],    // 默认全局居中
-                		            radius : [0, '75%'],
+                		            radius : [0, '85%'],
                 		            startAngle: 140,
                 		            endAngle : -140,
                 		            min: -1,                     // 最小值
@@ -106,12 +106,14 @@
                 		                show: true,
                 		                formatter: function(v){
                 		                    switch (v+''){
-                		                        case '-0.8': return '高';
-                		                        case '-0.4': return '较高';
-                		                        case '0': return '中';
-                		                        case '0.4': return '较低';
-                		                        case '0.8': return '低';
-                		                        default: return '';
+                		                    	case '-1': return '最高(-1.0)';
+                		                        case '-0.8': return '高(-0.8)';
+                		                        case '-0.4': return '较高(-0.4)';
+                		                        case '0': return '中(0)';
+                		                        case '0.4': return '较低(0.4)';
+                		                        case '0.8': return '低(0.8)';
+                		                        case '1': return '最低(1.0)';
+                		                        //default: return '';
                 		                    }
                 		                },
                 		                textStyle: {       // 其余属性默认使用全局文本样式，详见TEXTSTYLE
