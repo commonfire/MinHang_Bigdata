@@ -25,7 +25,7 @@ public class OrientationCompute {
     public static ArrayList<SentimentWordItem> sentimentWords;   //情感词库词语
     public static ArrayList<BaseWordItem> positiveWords;         //基准褒义词词语
     public static ArrayList<BaseWordItem> negativeWords;         //基准贬义词词语
-    public static HashMap<String, Float> emoticons;
+    public static HashMap<String, Float> emoticons;              //表情基准词库
     
     //加载词库，只需要一次
     static{
@@ -154,6 +154,7 @@ public class OrientationCompute {
 			}
 		}
 		if(wordCount!=0){
+			System.out.println(score);
 			result = score/wordCount;
 		}
 		return result;
@@ -383,6 +384,11 @@ public class OrientationCompute {
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception {
+	//	new OrientationCompute().calcDSOofSentence3( "", sentimentWords, positiveWords, negativeWords);
+	//	System.out.println(new OrientationCompute().calcDSOofSentence("在杭州玩的超开心www不想回日本了QAQ 我在这里:", sentimentWords));
+		int n = 5;
+		long m = 6;
+		if(m>n)System.out.println('h');
 	}
 
 }

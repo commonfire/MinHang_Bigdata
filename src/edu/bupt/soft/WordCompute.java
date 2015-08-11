@@ -1,6 +1,7 @@
 package edu.bupt.soft;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Vector;
 
 public class WordCompute {
@@ -46,7 +47,6 @@ public class WordCompute {
 	public static double calNonSentiWord(Vector<String> nonSentiWords,ArrayList<BaseWordItem> positiveWords,ArrayList<BaseWordItem> negativeWords,ArrayList<SentimentWordItem> sentimentWords){
 		double score = 0;      
 		if(nonSentiWords.size()!=0){
-			System.out.println(nonSentiWords.size());
 			for(int i = 0;i<nonSentiWords.size();i++){
 				score += new HowNetSimilarity().getWordAvgDSO(nonSentiWords.get(i), positiveWords, negativeWords, sentimentWords);		
 			}
