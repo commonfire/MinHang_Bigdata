@@ -154,7 +154,6 @@ public class OrientationCompute {
 			}
 		}
 		if(wordCount!=0){
-			System.out.println(score);
 			result = score/wordCount;
 		}
 		return result;
@@ -296,10 +295,8 @@ public class OrientationCompute {
 		//获得情感词库，调用SentenceProcessor的getSentimentSentences()方法
 		double value = 0;
 		double score = 0;   //最后文本内容的情感倾向值
-		String sql1 = "select * from emotion_dictionary";
-		ResultSet rs1 = SelectOperation.selectOnes(sql1);
 		ArrayList<String> sentenceList = new SentenceProcessor().SplitToSentences(blogContent);                //将文本内容分句
-		ArrayList<SentimentWordItem> sentimentWords = new SentenceProcessor().getSentimentWords(rs1);          //获得情感词库中情感单词
+		
 		ArrayList<String> sentimentList = new ArrayList<String>();
 		sentimentList = new SentenceProcessor().getSentimentSentences(sentenceList, sentimentWords);           //获得文本内容中观点句子
 		
@@ -378,6 +375,8 @@ public class OrientationCompute {
 		}	
 		return result;
 	}
+	
+	
 
 	/**
 	 * @param args
@@ -386,9 +385,7 @@ public class OrientationCompute {
 	public static void main(String[] args) throws Exception {
 	//	new OrientationCompute().calcDSOofSentence3( "", sentimentWords, positiveWords, negativeWords);
 	//	System.out.println(new OrientationCompute().calcDSOofSentence("在杭州玩的超开心www不想回日本了QAQ 我在这里:", sentimentWords));
-		int n = 5;
-		long m = 6;
-		if(m>n)System.out.println('h');
+
 	}
 
 }

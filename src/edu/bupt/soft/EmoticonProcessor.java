@@ -58,14 +58,11 @@ public class EmoticonProcessor {
 	}
 	
 	
-	
 	public static void main(String[] args) throws SQLException {
-		Connection conn = SQLHelper.getConnection();
-    	String sql = "select * from emoticon_baseword";
-    	ResultSet rs = SQLHelper.executeQuery(sql, null, conn);
-		HashMap<String, Float> emoticonmap = new SentenceProcessor().getEmoticons(rs);
-		System.out.println(new EmoticonProcessor().calEmoticon("[礼物][神马]", emoticonmap));
-		
-		
+//		Connection conn = SQLHelper.getConnection();
+//    	String sql = "select * from emoticon_baseword";
+//    	ResultSet rs = SQLHelper.executeQuery(sql, null, conn);
+//		HashMap<String, Float> emoticonmap = new SentenceProcessor().getEmoticons(rs);
+//		System.out.println(new EmoticonProcessor().calEmoticon("[礼物][神马]", emoticonmap));
 	}
 }
