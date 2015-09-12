@@ -15,10 +15,18 @@ public class SQLHelper {
     private static ResultSet rs = null;
     private static CallableStatement cs = null;
 
-	static String drivername="com.mysql.jdbc.Driver";
-	static String url="jdbc:mysql://10.108.147.198:3306/weiboanalysis";
-	static String username="root";
-	static String password="root";
+//	static String drivername="com.mysql.jdbc.Driver";
+//	static String url="jdbc:mysql://10.108.147.198:3306/weiboanalysis";
+//	static String username="root";
+//	static String password="root";
+	static String drivername="oracle.jdbc.driver.OracleDriver";
+	static String url="jdbc:oracle:thin:@10.108.144.99:1521/orcl";
+	static String username="ZTQ";
+	static String password="fnl12345678";
+//	static String url="jdbc:oracle:thin:@10.108.147.143:1521/orcl";
+//	static String username="bupt";
+//	static String password="bupt";
+
 
     public static Connection getConn() {
         return conn;
@@ -49,6 +57,7 @@ public class SQLHelper {
     public static Connection getConnection() {
         try {
             conn = DriverManager.getConnection(url, username, password);
+//            System.out.println("success!");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -98,7 +107,6 @@ public class SQLHelper {
                     ps.setString(i + 1, parameters[i]);
                 }
             // 执行
-            System.out.println(ps);
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();// 
@@ -119,16 +127,41 @@ public class SQLHelper {
                     ps.setString(i + 1, parameters[i]);                  
                 }
             }
-            rs = ps.executeQuery();          
+            rs = ps.executeQuery();         
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage()); 
         } finally {
-        	//此处不能在内部关闭 close(rs, cs, conn)，会报异常。由于已经关闭了，返回给外界的ResultSet无法调用。可以采用传入Connection对象，在外界关闭。也可以采用数据库连接池
+        	//此处不能在内部关闭 close(rs, ps, conn)，会报异常。由于已经关闭了，返回给外界的ResultSet无法调用。可以采用传入Connection对象，在外界关闭。也可以采用数据库连接池
         }
         return rs;
    }
 
+    // 执行单个select操作
+    public static int executeQuery1(String sql,String[] parameters,Connection conn,String column) throws SQLException {      
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        int result = 0;
+        try {
+        	ps = conn.prepareStatement(sql);
+            if (parameters != null) {
+                for (int i = 0; i < parameters.length; i++) {
+                    ps.setString(i + 1, parameters[i]);                  
+                }
+            }
+            rs = ps.executeQuery();  
+            rs.next();
+            result = rs.getInt(column);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage()); 
+        } finally {
+        	rs.close();
+        	ps.close();
+        }
+        return result;
+   }
+    
     // 调用无返回值存储过程
     // 格式： call procedureName(parameters list)
     public static void callProc(String sql, String[] parameters) {
@@ -187,6 +220,8 @@ public class SQLHelper {
         return cs;
     }
 
+   
+    
     //关闭数据库连接，释放资源
     public static void close(ResultSet rs, Statement ps, Connection conn) {
         if (rs != null)
@@ -210,5 +245,17 @@ public class SQLHelper {
                 e.printStackTrace();
             }
         conn = null;
+    }
+    
+    public static void main(String[] args) throws SQLException{
+    	SQLHelper.getConnection();
+//    	String sql = "select \"NAME\" from \"T\"";
+//    	ResultSet rs = executeQuery(sql,null,conn);	
+//    	rs.next();
+//    	System.out.println(rs.getString("NAME"));
+//    	String sql = "insert into \"T\" values(5,'代码')";
+//    	executeUpdate(sql,null);
+//    	System.out.println("finish insert");
+    	
     }
 }

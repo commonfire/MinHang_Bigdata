@@ -1,10 +1,10 @@
 <%@page import="edu.bupt.display.ShowFormat"%>
-<%@page import="edu.bupt.jdbc.SelectWeibo"%>
+<%@page import="edu.bupt.jdbc.SelectOperation"%>
 <%@page import="edu.bupt.soft.OrientationCompute"%>
 <%@page import="java.sql.ResultSet"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-    
+<%@ include file="../inc/conn_oracle.jsp"%>    
 <%!String result = null; 
    String userID = null;
 %>
@@ -16,7 +16,7 @@
     	final int count = 12;
     	double score = 0;
     	String blog = null;
-    	ResultSet rs = new SelectWeibo().selectWeiboForLevel(userID,count);
+    	ResultSet rs = SelectOperation.selectContent(userID,conn,count);
         if(rs!=null){
         	while(rs.next()){
             	blog = rs.getString("content");
@@ -70,3 +70,4 @@
   <div id="container" style="min-width:700px;height:400px"></div>
 </body>
 </html>
+<%@ include file="../inc/conn_close.jsp"%>

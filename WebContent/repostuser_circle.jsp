@@ -3,15 +3,13 @@
 <%@page import="java.sql.ResultSet"%>
 <%@page import="java.util.HashMap"%>  
 <%@page import="java.util.Map.*"%>   
-<%@page import="edu.bupt.jdbc.SelectWeibo"%>
 <%@page import="edu.bupt.display.RepostCircle"%>
-
+<%@ include file="../inc/conn_oracle.jsp"%>
  
     
 <%
-     ResultSet rs = new SelectWeibo().selectWeibo("2728266823");
      HashMap<String, HashMap<String, Integer>> outer_map = new HashMap<String, HashMap<String, Integer>>();
-     outer_map = new RepostCircle().getTopRepostUser("2728266823", 5);
+     outer_map = new RepostCircle().getTopRepostUser("2728266823",5,conn);
      HashMap<String, Integer> inner_map = outer_map.get("2728266823");
 //     System.out.println(inner_map);
      String[] repostuser = new String[5];
@@ -173,3 +171,4 @@
         );
     </script>
 </html>
+<%@ include file="../inc/conn_close.jsp"%>

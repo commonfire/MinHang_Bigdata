@@ -1,5 +1,6 @@
 package edu.bupt.display;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -13,7 +14,8 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.bupt.jdbc.SelectWeibo;
+import edu.bupt.jdbc.SQLHelper;
+import edu.bupt.jdbc.SelectOperation;
 
 /**
  * @author DELL
@@ -26,13 +28,16 @@ public class AtuserCircle {
 	 * @param atuserString  待处理的at用户数据
 	 * @return	过滤并结构化的at用户数据
 	 */
-	private ArrayList<String> filterAtuserData(String atuserString){
+	public static ArrayList<String> filterAtuserData(String atuserString){
 	ArrayList<String> resultlist = new ArrayList<String>();
-	Pattern p = Pattern.compile("(@(.*?) |@(.*))");   //注意正则表达式或的使用要配合括号使用    
-	if(atuserString!=""){
-		Matcher m = p.matcher(atuserString);
+//	Pattern p = Pattern.compile("(@() |@(.*))");   //注意正则表达式或的使用要配合括号使用    
+	Pattern p = Pattern.compile("@(.*?) ");
+	if(atuserString!=null){
+		Matcher m = p.matcher(atuserString+" ");
 		while(m.find()){
-              resultlist.add(m.group(1));
+			resultlist.add(m.group(1));
+//			  String s = m.group(1).trim();
+//              resultlist.add(s.substring(1,s.length()));
 		}
 		return resultlist;
 	}else{
@@ -74,17 +79,18 @@ public class AtuserCircle {
 	 * 获得某用户at用户次数topN的用户
 	 * @param userID  某用户的userID
 	 * @param topN    获取前N名at次数的用户   
+	 * @param conn    数据库连接  
 	 * @return        某用户与其at次数topN的用户名和相应at次数
 	 */
-	public HashMap<String, HashMap<String, Integer>> getTopAtUser(String userID,int topN){	
+	public HashMap<String, HashMap<String, Integer>> getTopAtUser(String userID,int topN,Connection conn){	
 		 ArrayList<String> atuser_list = new ArrayList<String>();
 	     HashMap<String, HashMap<String, Integer>> outer_map = new HashMap<String, HashMap<String, Integer>>();
 	     HashMap<String, Integer> inner_map = new HashMap<String, Integer>();
 		 try {
-			    ResultSet rs = new SelectWeibo().selectWeibo(userID);
+			    ResultSet rs = SelectOperation.selectWeibo(userID, conn);
 			 	while(rs.next()){
 			 		String atuser = rs.getString("atuser");
-			 		atuser_list = this.filterAtuserData(atuser);
+			 		atuser_list = filterAtuserData(atuser);
 			 		if(atuser_list!=null){ 
 			 			for(String atuser2:atuser_list){
 			 				if(inner_map.containsKey(atuser2)){
@@ -108,12 +114,13 @@ public class AtuserCircle {
 	public static void main(String[] args) {
 		
 		try {
-//			 HashMap<String, HashMap<String, Integer>> test_map = new HashMap<String, HashMap<String, Integer>>();
-//			 test_map = new AtuserCircle().getTopAtUser("1763409631", 5);
-//			 System.out.println(test_map);
-//			ArrayList<String> a = new AtuserCircle().filterAtuserData("#扬州中国国际旅行社荣登扬州市诚信企业红榜 # @扬州扬子江集团官方微博");   //@TopSeat-阿浩 @TopSeat-Jeff @小炎ismonster
-//			System.out.println(a);
-			
+			 HashMap<String, HashMap<String, Integer>> test_map = new HashMap<String, HashMap<String, Integer>>();
+			 Connection conn = SQLHelper.getConnection();
+			 test_map = new AtuserCircle().getTopAtUser("3655612552",5,conn);
+			 System.out.println(test_map);
+			 conn.close();
+//			AtuserCircle a = new AtuserCircle();
+//			System.out.println(a.filterAtuserData("@民航2015 @航大东北王"));
 		} catch (Exception e) {
 			// TODO: handle exception
 		}

@@ -1,9 +1,10 @@
 package edu.bupt.display;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.HashMap;
 
-import edu.bupt.jdbc.SelectWeibo;
+import edu.bupt.jdbc.SelectOperation;
 
 /**
  * @author zjd
@@ -22,13 +23,14 @@ public class UserMap {
 	
 	/**
 	 * 统计用户分布地理位置信息
+	 * @param uid        用户uid
 	 * @param itemN      统计数据库中用户信息的条数
 	 * @return			 地理位置及对应用户数
 	 */
-	public HashMap<String,Integer> getUserGeoInfo(int itemN){
+	public HashMap<String,Integer> getUserGeoInfo(String uid,int itemN,Connection conn){
 		HashMap<String,Integer> usermap = new HashMap<String, Integer>();
 		try {
-			ResultSet rs = new SelectWeibo().selectUserInfo(itemN);
+			ResultSet rs = SelectOperation.selectUserinfo(uid, conn, itemN);
 			while(rs.next()){
 				String province = filterData(rs.getString("location"));
 				if(usermap.containsKey(province)){

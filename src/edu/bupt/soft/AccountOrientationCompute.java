@@ -3,6 +3,8 @@ package edu.bupt.soft;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.bupt.jdbc.SQLHelper;
 
@@ -38,12 +40,40 @@ public class AccountOrientationCompute extends OrientationCompute {
 				e.printStackTrace();
 			}
 		}
-		return score;
+		return score/topN;
 	}
 	
+	public void processAccountOrientation(){
+		Connection conn = SQLHelper.getConnection();
+    	String sql1 = "select userID from t_user_info";
+    	String sql2 = "insert ignore into t_user_info(userID,degree) values(?,?)";
+		ResultSet rs;
+		String userid = null;
+		double score = 0;
+		try {
+			rs = SQLHelper.executeQuery(sql1, null, conn);
+			while(rs.next()){
+				userid = rs.getString("userID");
+				score = calAccountOrientation(userid, 10);
+				SQLHelper.executeUpdate(sql2, new String[]{String.valueOf(score),userid});
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}finally{
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
 	
+
 	public static void main(String[] args) {
-		System.out.println(new AccountOrientationCompute().calAccountOrientation("1736439373", 10));
+//		System.out.println(new AccountOrientationCompute().calAccountOrientation("1736439373", 10));
+		//new AccountOrientationCompute().processAccountOrientation();
 	}
 
 }

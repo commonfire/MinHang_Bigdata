@@ -121,30 +121,6 @@ public class HowNetSimilarity {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-	
-		JDBCConnect.getConnection();
-		String sql1 = "select * from positive_baseword";
-		ResultSet rs1 = SelectOperation.selectOnes(sql1);
-		ArrayList<BaseWordItem> positiveWords =  new SentenceProcessor().getBaseWords(rs1); 
-		
-		String sql2 = "select * from negative_baseword";
-		ResultSet rs2 = SelectOperation.selectOnes(sql2);
-		ArrayList<BaseWordItem> negativeWords =  new SentenceProcessor().getBaseWords(rs2); 
-		
-		String sql3 = "select * from emotion_dictionary";
-		ResultSet rs3 = SelectOperation.selectOnes(sql3);
-		ArrayList<SentimentWordItem> sentimentWords = new SentenceProcessor().getSentimentWords(rs3);
-		
-		
-//		double value = new HowNetSimilarity().getWordDSO("烦", positiveWords, negativeWords);
-//		double value1 = new HowNetSimilarity().getWordDSO1("烦", positiveWords, negativeWords);
-//		double value2 = new HowNetSimilarity().getWordDSO2("郁闷", sentimentWords);
-		double value3 = new HowNetSimilarity().getWordAvgDSO("恶毒", positiveWords, negativeWords, sentimentWords);
-//		System.out.println("未改进,范围为[-1,1]:"+value);
-//		System.out.println("改进算法1,范围为[-1,1]:"+value1);
-//		System.out.println("改进算法2,范围为[-1,1]:"+value2);
-		System.out.println("平均3种算法,范围为[-1,1]:"+value3);
-		
 	}
 
 }

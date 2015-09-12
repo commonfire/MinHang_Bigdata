@@ -2,12 +2,11 @@
     pageEncoding="UTF-8"%>
 <%@page import="java.util.HashMap"%>  
 <%@page import="java.util.Map.*"%>   
-<%@page import="edu.bupt.jdbc.SelectWeibo"%>
 <%@page import="edu.bupt.display.AtuserCircle"%>
-  
+<%@ include file="../inc/conn_oracle.jsp"%> 
 <%
      HashMap<String, HashMap<String, Integer>> outer_map = new HashMap<String, HashMap<String, Integer>>();
-     outer_map = new AtuserCircle().getTopAtUser("1763409631", 5);
+     outer_map = new AtuserCircle().getTopAtUser("1763409631", 5,conn);
      HashMap<String, Integer> inner_map = outer_map.get("1763409631");
      String[] atuser = new String[5];
      Integer[] atcounter = new Integer[5];
@@ -168,3 +167,4 @@
         );
     </script>
 </html>
+<%@ include file="../inc/conn_close.jsp"%>

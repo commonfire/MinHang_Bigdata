@@ -1,5 +1,4 @@
-<%@page import="edu.bupt.jdbc.Selection"%>
-<%@page import="edu.bupt.jdbc.SelectWeibo"%>
+<%@page import="edu.bupt.jdbc.SelectOperation"%>
 <%@page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="java.sql.SQLException"%>
 <%@page import="java.sql.ResultSet"%>
@@ -36,7 +35,7 @@
 
 	//根据微博账号，计算用户ID
 	String userID1 = null;
-	ResultSet rs1 =  Selection.selectUserid(userAlias1, conn);                  
+	ResultSet rs1 =  SelectOperation.selectUserid(userAlias1, conn);                  
 	if(rs1!=null&&rs1.next()){
 		userID1 = rs1.getString("userID");
 	}else{
@@ -75,7 +74,7 @@
 				<!-- 表格开始  JSP动态生成 -->
 				<%
 				if(userID1!=null){
-					ResultSet rs = Selection.selectWeibo(userID1, conn);        
+					ResultSet rs = SelectOperation.selectWeibo(userID1, conn);        
 					if(rs!=null){
 						try{
 							while(rs.next()){%>

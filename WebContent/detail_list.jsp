@@ -1,4 +1,4 @@
-<%@page import="edu.bupt.jdbc.Selection"%>
+<%@page import="edu.bupt.jdbc.SelectOperation"%>
 <%@page import="edu.bupt.display.ShowFormat"%>
 <%@page import="edu.bupt.soft.WordCompute"%>
 <%@page import="org.ansj.test.WordSegAnsj"%>
@@ -43,7 +43,7 @@
 	<%
 		String weiboID=request.getParameter("id");
 		String weiboContent="";
-		ResultSet rs= Selection.selectContent(weiboID,conn);   //stmt.executeQuery("select content from t_user_weibo where id="+weiboID);       //从数据库中选取指定id的微博内容
+		ResultSet rs= SelectOperation.selectContent(weiboID,conn);   //stmt.executeQuery("select content from t_user_weibo where id="+weiboID);       //从数据库中选取指定id的微博内容
 		if(rs!=null){
 			try{
 			if(rs.next()){
