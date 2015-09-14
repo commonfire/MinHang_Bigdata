@@ -65,7 +65,7 @@ public class AtuserCircle {
 			}
 		});
 		for (Map.Entry<String, Integer>entry:list){
-			if(flag <= topN){
+			if(flag <= Math.min(topN,list.size())){
 				sortedN_map.put(entry.getKey(), entry.getValue());
 				flag++;
 			}else break;
@@ -114,13 +114,15 @@ public class AtuserCircle {
 	public static void main(String[] args) {
 		
 		try {
-			 HashMap<String, HashMap<String, Integer>> test_map = new HashMap<String, HashMap<String, Integer>>();
-			 Connection conn = SQLHelper.getConnection();
-			 test_map = new AtuserCircle().getTopAtUser("3655612552",5,conn);
-			 System.out.println(test_map);
-			 conn.close();
+//			 HashMap<String, HashMap<String, Integer>> test_map = new HashMap<String, HashMap<String, Integer>>();
+//			 Connection conn = SQLHelper.getConnection();
+//			 test_map = new AtuserCircle().getTopAtUser("3655612552",5,conn);
+//			 System.out.println(test_map);
+//			 conn.close();
 //			AtuserCircle a = new AtuserCircle();
 //			System.out.println(a.filterAtuserData("@民航2015 @航大东北王"));
+			Integer a = 1;
+			System.out.println(a.getClass().getName());
 		} catch (Exception e) {
 			// TODO: handle exception
 		}

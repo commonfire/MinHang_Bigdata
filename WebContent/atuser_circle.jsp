@@ -6,18 +6,17 @@
 <%@ include file="../inc/conn_oracle.jsp"%> 
 <%
      HashMap<String, HashMap<String, Integer>> outer_map = new HashMap<String, HashMap<String, Integer>>();
-     outer_map = new AtuserCircle().getTopAtUser("1763409631", 5,conn);
-     HashMap<String, Integer> inner_map = outer_map.get("1763409631");
+     outer_map = new AtuserCircle().getTopAtUser("3655612552", 5,conn);
+     HashMap<String, Integer> inner_map = outer_map.get("3655612552");
      String[] atuser = new String[5];
      Integer[] atcounter = new Integer[5];
      Integer i = 0;
      for(String user:inner_map.keySet()){
-     	if (i<5){
+     	if (i< Math.min(5,inner_map.keySet().size())){
      		atuser[i] = user ;
      		atcounter[i] = inner_map.get(user);
      		i++;
      	}else break;
-     	
      }
 %>    
     

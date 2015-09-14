@@ -124,7 +124,9 @@ public class WordSegAnsj {
 //		System.out.println(ToAnalysis.parse("这是一个计算机和服务。"));
 //		System.out.println(WordSegment.splitOriginal("这是一个计算机和服务。"));
 		ArrayList<SentimentWordItem> sentimentWords = new OrientationCompute().sentimentWords;
-		System.out.println(WordSegAnsj.getSentimentWord(WordSegAnsj.splitOriginal("一不小心把心里话说出来了"), sentimentWords));
+		List<Term> parse = ToAnalysis.parse("在杭州玩的超开心www不想回日本了QAQ 我在这里:");
+		System.out.println(parse);
+//		System.out.println(WordSegAnsj.getSentimentWord(words, sentimentWords));
 
 		
 	}
