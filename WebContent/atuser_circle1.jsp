@@ -1,4 +1,3 @@
-<%@page import="edu.bupt.jdbc.SelectOperation"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@page import="java.util.HashMap"%>  
@@ -6,23 +5,19 @@
 <%@page import="edu.bupt.display.AtuserCircle"%>
 <%@ include file="../inc/conn_oracle.jsp"%> 
 <%
-	//String userID = request.getParameter("uid")!=null?request.getParameter("uid"):null;
-	String userID = "3655612552";
-	String mainUser = null;
-	ResultSet rs1 = null;
-	ResultSet rs2 = null;
-	if(userID!=null){
-//		ResultSet rs = SelectOperation.selectAlias(userID, conn);
-//		if(rs!=null){
-//			rs.next();
-//			mainUser = rs.getString("userAlias");
-//		}else{
-//			mainUser = userID;
-//		}
-		mainUser = "北邮-民航";
-		rs1 = SelectOperation.selectAtuser(userID,"5",conn);
-		rs2 = SelectOperation.selectAtuser(userID,"5",conn);
-	}
+     HashMap<String, HashMap<String, Integer>> outer_map = new HashMap<String, HashMap<String, Integer>>();
+     outer_map = new AtuserCircle().getTopAtUser("3655612552", 5,conn);
+     HashMap<String, Integer> inner_map = outer_map.get("3655612552");
+     String[] atuser = new String[5];
+     Integer[] atcounter = new Integer[5];
+     Integer i = 0;
+     for(String user:inner_map.keySet()){
+     	if (i< Math.min(5,inner_map.keySet().size())){
+     		atuser[i] = user ;
+     		atcounter[i] = inner_map.get(user);
+     		i++;
+     	}else break;
+     }
 %>    
     
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -125,19 +120,19 @@
                 			            scaling: 1.1,
                 			            roam: 'move',
                 			            nodes:[
-                			                {category:0, name: '<%=mainUser%>'+'（主用户）', value : 10, label: '<%=mainUser%>'+'\n（主用户）'},
-                			                <%
-                			                while(rs1.next()){
-                			                	out.print("{category:1, name: '"+rs1.getString("ATUSER")+"',value :"+rs1.getString("TOTALNUMBER")+"},");
-                			                }
-                			                %>
+                			                {category:0, name: '东哥byr'+'（主用户）', value : 10, label: '东哥byr\n（主用户）'},
+                			                {category:1, name: '<%=atuser[0]%>',value : <%=atcounter[0]%>},
+                			                {category:1, name: '<%=atuser[1]%>',value : <%=atcounter[1]%>},
+                			                {category:1, name: '<%=atuser[2]%>',value : <%=atcounter[2]%>},
+                			                {category:1, name: '<%=atuser[3]%>',value : <%=atcounter[3]%>},
+                			                {category:1, name: '<%=atuser[4]%>',value : <%=atcounter[4]%>},
                 			            ],
                 			            links : [
-                			                 <%
-                			                 while(rs2.next()){
-                			                	 out.print("{source:'"+rs2.getString("ATUSER")+"',target:'"+mainUser+"（主用户）',weight:"+rs2.getString("TOTALNUMBER")+",name:'"+rs2.getString("TOTALNUMBER")+"次'},");
-                			                 }
-                			                 %>                			                  
+                			                {source : '<%=atuser[0]%>', target : '东哥byr'+'（主用户）', weight : <%=atcounter[0]%>, name: '<%=atcounter[0]%>次'},
+                			                {source : '<%=atuser[1]%>', target : '东哥byr'+'（主用户）', weight : <%=atcounter[1]%>, name: '<%=atcounter[1]%>次'},
+                			                {source : '<%=atuser[2]%>', target : '东哥byr'+'（主用户）', weight : <%=atcounter[2]%>, name: '<%=atcounter[2]%>次'},
+                			                {source : '<%=atuser[3]%>', target : '东哥byr'+'（主用户）', weight : <%=atcounter[3]%>, name: '<%=atcounter[3]%>次'},
+                			                {source : '<%=atuser[4]%>', target : '东哥byr'+'（主用户）', weight : <%=atcounter[4]%>, name: '<%=atcounter[4]%>次'},
                 			                
                 			            ]
                 			        }

@@ -1,9 +1,9 @@
 <%@ page language="java" import="java.sql.*"%>
 <%
 Class.forName("oracle.jdbc.driver.OracleDriver").newInstance(); 
-String url="jdbc:oracle:thin:@10.108.144.99:1521/orcl";
-String dbusername="ZTQ";
-String dbpassword="fnl12345678";
+String url="jdbc:oracle:thin:@10.108.147.143:1521/orcl";
+String dbusername="bupt";     //"ZTQ";
+String dbpassword="bupt";     //"fnl12345678";
 Connection conn=null;
 Statement stmt=null;
 Statement stmt2=null;

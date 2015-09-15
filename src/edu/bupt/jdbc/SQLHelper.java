@@ -20,9 +20,9 @@ public class SQLHelper {
 //	static String username="root";
 //	static String password="root";
 	static String drivername="oracle.jdbc.driver.OracleDriver";
-	static String url="jdbc:oracle:thin:@10.108.144.99:1521/orcl";
-	static String username="ZTQ";
-	static String password="fnl12345678";
+	static String url="jdbc:oracle:thin:@10.108.147.143:1521/orcl";
+	static String username= "bupt";     //"ZTQ";
+	static String password= "bupt";     //"fnl12345678";
 //	static String url="jdbc:oracle:thin:@10.108.147.143:1521/orcl";
 //	static String username="bupt";
 //	static String password="bupt";

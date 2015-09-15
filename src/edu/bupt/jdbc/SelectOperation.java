@@ -25,7 +25,7 @@ public class SelectOperation {
 		String[] str = new String[]{userID};
 		ResultSet rs = null;
 		try {
-			rs = SQLHelper.executeQuery("select \"userAlias\" from \"t_user_info\" where \"userID\" = ?", str, conn);
+			rs = SQLHelper.executeQuery("select userAlias from t_user_info where userID = ?", str, conn);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -38,7 +38,7 @@ public class SelectOperation {
 		String[] str = new String[]{keyword};
 		ResultSet rs = null;
 		try {
-			rs = SQLHelper.executeQuery("select \"userID\",\"userAlias\" from \"t_user_keyword\" where \"keyword\"= ? order by \"time\" desc", str, conn);
+			rs = SQLHelper.executeQuery("select \"userID\",\"userAlias\" from \"t_user_keyword\" where \"keyword\"= ? order by \"publishTime\" desc", str, conn);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -46,6 +46,7 @@ public class SelectOperation {
 		return rs;
 	}
 	
+	//获取用户关系信息
 	public static ResultSet selectRelationuid(String userID,Connection conn){
 		String[] str = new String[]{userID,userID};
 		ResultSet rs = null;
@@ -58,8 +59,21 @@ public class SelectOperation {
 		}
 		return rs;
 	}
-
 	
+	public static ResultSet selectAtuser(String userID,String topN,Connection conn){
+		ResultSet rs = null;
+		String[] str = new String[]{userID,topN};
+		try {
+			String sql = "select * from (select userID,atuser,atuserID,count(*) as totalNumber from t_user_weibocontent_atuser where userID=? group by atuserID,userID,atuser order by totalNumber desc) where rownum<=?";
+			rs = SQLHelper.executeQuery(sql, str, conn);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return rs;
+	}
+
+	//获取微博信息
 	public static ResultSet selectWeibo(String userID,Connection conn){
 		String[] str = new String[]{userID};
 		ResultSet rs = null;
@@ -101,7 +115,7 @@ public class SelectOperation {
 		String[] str = new String[]{uid};
 		ResultSet rs = null;
 		try {
-			rs = SQLHelper.executeQuery("select * from \"t_user_weibocontent\" where \"userID\"= ? order by \"time\" desc", str, conn);
+			rs = SQLHelper.executeQuery("select * from t_user_weibocontent where userID= ? order by publishTime desc", str, conn);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -110,11 +124,12 @@ public class SelectOperation {
 		
 	}
 	
+	//获取用户信息
 	public static ResultSet selectUserinfo(String uid,Connection conn){
 		String[] str = new String[]{uid};
 		ResultSet rs = null;
 		try {
-			rs = SQLHelper.executeQuery("select * from \"t_user_info\" where \"userID\"= ?", str, conn);
+			rs = SQLHelper.executeQuery("select * from t_user_info where userID= ?", str, conn);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -136,6 +151,7 @@ public class SelectOperation {
 		
 	}
 	
+	//获取爬虫结束状态
 	public static int selectEndState(String column,Connection conn){
 		int result = 0;
 		try {
@@ -151,25 +167,10 @@ public class SelectOperation {
 	
 	
 	public static void main(String[] args) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
-//		Class.forName("com.mysql.jdbc.Driver");
-//		String url="jdbc:mysql://10.108.147.198:3306/weiboanalysis";
-//		String dbusername="root";
-//		String dbpassword="root";
-		String drivername="oracle.jdbc.driver.OracleDriver";
-		Class.forName(drivername);
-		System.out.println("stage1");
-		String url="jdbc:oracle:thin:@10.108.144.99:1521/orcl";
-		String username="ZTQ";
-		String password="fnl12345678";
-		Connection conn=null;
-		conn = DriverManager.getConnection(url, username, password);
-		System.out.println("stage2");
-
-		
-		for(int i = 0;i<10;i++){
-			int r = SelectOperation.selectEndState("searchstate",conn);
-			System.out.println(r);
-		}
+		Connection conn = SQLHelper.getConnection();
+		ResultSet rs = selectAtuser("3655612552", "5",conn);
+		rs.next();
+		System.out.println(rs.getString("atuser"));
 		conn.close();
 	}
 

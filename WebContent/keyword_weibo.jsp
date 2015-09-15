@@ -43,7 +43,7 @@
 			<td><%=rs.getRow()%></td>
 			<td><%=userAlias%></td>
 			<td><%=rs.getString("content")!=null?rs.getString("content"):""%></td> 
-		    <td><%=rs.getString("time")!=null?rs.getString("time").substring(0, rs.getString("time").lastIndexOf(':')):""%></td>  
+		    <td><%=rs.getString("publishTime")!=null?rs.getString("publishTime").substring(0, rs.getString("time").lastIndexOf(':')):""%></td>  
 		</tr>
 		<%
 						}
