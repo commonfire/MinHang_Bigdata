@@ -20,7 +20,7 @@ public class AccountOrientationCompute extends OrientationCompute {
     	Connection conn = SQLHelper.getConnection();
     	String blogcontent = null;
     	double score = 0;
-    	String sql = "select content from t_user_weibo where userID = "+userid+" order by time desc limit "+topN;
+    	String sql = "select content from t_user_weibocontent where userID = "+userid+" order by publishTime desc limit "+topN;
 		ResultSet rs;
 		try {
 			rs = SQLHelper.executeQuery(sql, null, conn);
@@ -71,9 +71,10 @@ public class AccountOrientationCompute extends OrientationCompute {
 	}
 	
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws SQLException {
 //		System.out.println(new AccountOrientationCompute().calAccountOrientation("1736439373", 10));
 		//new AccountOrientationCompute().processAccountOrientation();
+
 	}
 
 }

@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Vector;
+
+import org.ansj.test.WordSegAnsj;
 
 public class SentenceProcessor {
 
@@ -18,15 +21,29 @@ public class SentenceProcessor {
 	 */
 	public ArrayList<String> SplitToSentences(String blogContent){
 		ArrayList<String> sentenceList = new ArrayList<String>();
-		String[] sentenceArray = blogContent.split("。|；|！|？|\\.|;|!|\\?");
-		sentenceList = new ArrayList<String>(Arrays.asList(sentenceArray));
-			for(int i = sentenceList.size()-1;i>=0;i--){
-				if(sentenceList.get(i).equals("")){
-					sentenceList.remove(sentenceList.get(i));
-				}	
-			}
-		//System.out.println("文本分句："+sentenceList);
+		if(blogContent!=null){
+			String[] sentenceArray = blogContent.split("。|；|！|？|\\.|;|!|\\?");
+			sentenceList = new ArrayList<String>(Arrays.asList(sentenceArray));
+				for(int i = sentenceList.size()-1;i>=0;i--){
+					if(sentenceList.get(i).equals("")){
+						sentenceList.remove(sentenceList.get(i));
+					}	
+				}
+		}
 		return sentenceList;
+	}
+	
+	/**
+	 * @param sentence1          待计算的句子1
+	 * @param sentence2          待计算的句子2
+	 * @return              返回两个句子距离，即相似度值
+	 * @throws Exception
+	 */
+	public double sentenceDistance(String sentence1,String sentence2) throws Exception{
+		Vector<String> str1 = WordSegAnsj.split(sentence1);     //对句子1分词
+		Vector<String> str2 = WordSegAnsj.split(sentence2);     //对句子2分词
+		double distance = SentSimilarity.getSimilarity(str1, str2);
+		return distance;
 	}
 	
 
@@ -156,10 +173,10 @@ public class SentenceProcessor {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 /////////////////////////////////////////////////////文本分句测试////////////////////////////////////////////////////////////////		
-		//String testBlog = "测试分割句子1，测试分割句子2。测试分割句子3!测试分割句子4;测试分割句子5.测试分割句子6?";
-		//String testBlog ="中文测试测试，测试测试。\n测试测试？   测试测试测试测试！测试测试测试测试；English_testtesttest,    testtesttest. testtesttest testtesttesttesttesttest! testtesttest; 前面空格出现了！！连续符号~~";    
-		//String testBlog ="中文测试测试，测试测试。\n测试测试";
-		//System.out.println(testBlog);
+//String testBlog = "测试分割句子1，测试分割句子2。测试分割句子3!测试分割句子4;测试分割句子5.测试分割句子6?";
+//String testBlog ="中文测试测试，测试测试。\n测试测试？   测试测试测试测试！测试测试测试测试；English_testtesttest,    testtesttest. testtesttest testtesttesttesttesttest! testtesttest; 前面空格出现了！！连续符号~~";    
+//String testBlog ="中文测试测试，测试测试。\n测试测试";
+//System.out.println(testBlog);
 
 		//数据库连接
 //		JDBCConnect.getConnection();

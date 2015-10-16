@@ -1,5 +1,7 @@
 package edu.bupt.jdbc;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 public class SQLHelper {
     // 定义要使用的变量
@@ -15,17 +18,14 @@ public class SQLHelper {
     private static ResultSet rs = null;
     private static CallableStatement cs = null;
 
-//	static String drivername="com.mysql.jdbc.Driver";
-//	static String url="jdbc:mysql://10.108.147.198:3306/weiboanalysis";
-//	static String username="root";
-//	static String password="root";
-	static String drivername="oracle.jdbc.driver.OracleDriver";
-	static String url="jdbc:oracle:thin:@10.108.147.143:1521/orcl";
-	static String username= "bupt";     //"ZTQ";
-	static String password= "bupt";     //"fnl12345678";
-//	static String url="jdbc:oracle:thin:@10.108.147.143:1521/orcl";
-//	static String username="bupt";
-//	static String password="bupt";
+//	static String drivername="oracle.jdbc.driver.OracleDriver";
+//	static String url="jdbc:oracle:thin:@10.108.147.143:1521:orcl";
+//	static String username= "bupt";      
+//	static String password= "bupt";     
+	static String drivername = null;
+	static String url = null;
+	static String username = null;
+	static String password = null;
 
 
     public static Connection getConn() {
@@ -46,18 +46,32 @@ public class SQLHelper {
 
     // 加载驱动，只需要一次
     static {
+    	InputStream in = null;
         try {
+        	Properties pro = new Properties();	
+    		in = SQLHelper.class.getClassLoader().getResourceAsStream("config.properties");
+    		pro.load(in);
+    		url = pro.getProperty("url");
+    		username = pro.getProperty("dbusername");
+    		password = pro.getProperty("dbpassword");
+    		drivername = pro.getProperty("drivername");
             Class.forName(drivername);
         } catch (Exception e) {
             e.printStackTrace();
-        } 
+        }finally{
+        	try {
+				in.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
     }
 
     // 得到连接
     public static Connection getConnection() {
         try {
             conn = DriverManager.getConnection(url, username, password);
-//            System.out.println("success!");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -116,6 +130,25 @@ public class SQLHelper {
             close(rs, ps, conn);
         }
     }
+    
+    // 执行单个update/delete/insert操作
+    // sql格式如:UPDATE tablename SET columnn = ? WHERE column = ?
+    public static void executeUpdate(String[] parameters,Connection conn,PreparedStatement ps) {
+        try {
+            // 给占位符？赋值
+            if (parameters != null)
+                for (int i = 0; i < parameters.length; i++) {
+                    ps.setString(i + 1, parameters[i]);
+                }
+            // 执行
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();// 
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            // 关闭资源
+        }
+    }
 
     // 执行单个select操作
     public static ResultSet executeQuery(String sql, String[] parameters,Connection conn) throws SQLException {      
@@ -136,8 +169,7 @@ public class SQLHelper {
         }
         return rs;
    }
-
-    // 执行单个select操作
+    
     public static int executeQuery1(String sql,String[] parameters,Connection conn,String column) throws SQLException {      
         ResultSet rs = null;
         PreparedStatement ps = null;
@@ -161,6 +193,7 @@ public class SQLHelper {
         }
         return result;
    }
+
     
     // 调用无返回值存储过程
     // 格式： call procedureName(parameters list)
@@ -248,14 +281,8 @@ public class SQLHelper {
     }
     
     public static void main(String[] args) throws SQLException{
-    	SQLHelper.getConnection();
-//    	String sql = "select \"NAME\" from \"T\"";
-//    	ResultSet rs = executeQuery(sql,null,conn);	
-//    	rs.next();
-//    	System.out.println(rs.getString("NAME"));
-//    	String sql = "insert into \"T\" values(5,'代码')";
-//    	executeUpdate(sql,null);
-//    	System.out.println("finish insert");
+//    	 Connection conn = SQLHelper.getConnection();
+
     	
     }
 }

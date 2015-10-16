@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
+/**
+ * 用于网页微博句子信息展示
+ * @author zjd
+ */
 public class WordCompute {
 	
 	/**

@@ -15,7 +15,7 @@ public class ShowFormat {
 	}
 	
 	public static void main(String[] args) {
-		System.out.println(ShowFormat.showFormat(1.23333));
+		System.out.println(ShowFormat.showFormat(0));
 	}
 }
 

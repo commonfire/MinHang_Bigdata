@@ -17,11 +17,12 @@ public static double THRESHOLD = 0.2 ;  	//阈值
 	 * @return
 	 */
 	public static double getSimilarity(Vector<String> T1, Vector<String> T2) throws Exception {
+		//System.out.println("T1:"+T1+"-----T2:"+T2);
 		int size = 0 , size2 = 0 ;
 	    if ( T1 != null && ( size = T1.size() ) > 0 && T2 != null && ( size2 = T2.size() ) > 0 ) {
 	        
 	    	Map<String, double[]> T = new HashMap<String, double[]>();
-	        
+
 	        //T1和T2的并集T
 	    	String index = null ;
 	        for ( int i = 0 ; i < size ; i++ ) {
@@ -62,7 +63,8 @@ public static double THRESHOLD = 0.2 ;  	//阈值
 	        //句子相似度值
 	        return Ssum / Math.sqrt( s1*s2 );
 	    } else {
-	        throw new Exception("传入参数有问题！");
+	        //throw new Exception("传入参数有问题！");
+	    	return 0;
 	    }
 	}
 

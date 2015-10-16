@@ -15,7 +15,7 @@ public class EmoticonProcessor {
 	 * 计算给定微博句子中出现的表情符号以及出现次数
 	 * @param bloContent      给定微博句子内容
 	 * @param emoticonMap     表情基准词库
-	 * @return				    返回表情符号及相应出现次数
+	 * @return				  返回表情符号及相应出现次数
 	 */
 	public static HashMap<String,Integer> emoticonFilter(String sentence){
 		HashMap<String,Integer> resultmap = new HashMap<String,Integer>();
@@ -30,7 +30,8 @@ public class EmoticonProcessor {
 					resultmap.put(m.group(1),1);
 				}
 			}
-			return resultmap;
+			if(resultmap.isEmpty()) resultmap=null;
+			return resultmap;			 
 		}else{
 			return null;
 		}
@@ -61,8 +62,13 @@ public class EmoticonProcessor {
 	public static void main(String[] args) throws SQLException {
 //		Connection conn = SQLHelper.getConnection();
 //    	String sql = "select * from emoticon_baseword";
+//    	
 //    	ResultSet rs = SQLHelper.executeQuery(sql, null, conn);
 //		HashMap<String, Float> emoticonmap = new SentenceProcessor().getEmoticons(rs);
-//		System.out.println(new EmoticonProcessor().calEmoticon("[礼物][神马]", emoticonmap));
+//		System.out.println(new EmoticonProcessor().calEmoticon("hhh", emoticonmap));
+		
+//		String str="[微笑]微笑微笑[微笑]";
+//		str=str.replaceAll("\\[.*?\\]", "");
+//		System.out.println(str);
 	}
 }

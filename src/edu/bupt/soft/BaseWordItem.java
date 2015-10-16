@@ -5,7 +5,7 @@ package edu.bupt.soft;
  * 基准词词库的每个条目
  */
 public class BaseWordItem {
-	private float power;
+	private int power;
 	private String phrase;
 	
 	public float getPower() {
@@ -20,5 +20,5 @@ public class BaseWordItem {
 	public void setPhrase(String phrase) {
 		this.phrase = phrase;
 	}
-		
+
 }

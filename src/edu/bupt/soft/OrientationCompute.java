@@ -272,18 +272,7 @@ public class OrientationCompute {
 	}
 	
 	
-	/**
-	 * @param sentence1          待计算的句子1
-	 * @param sentence2          待计算的句子2
-	 * @return              返回两个句子距离，即相似度值
-	 * @throws Exception
-	 */
-	public double sentenceDistance(String sentence1,String sentence2) throws Exception{
-		Vector<String> str1 = WordSegAnsj.split(sentence1);     //对句子1分词
-		Vector<String> str2 = WordSegAnsj.split(sentence2);     //对句子2分词
-		double distance = SentSimilarity.getSimilarity(str1, str2);
-		return distance;
-	}
+
 	
 	
 	/**
@@ -364,7 +353,7 @@ public class OrientationCompute {
 			for(int i = 0;i < sentimentList.size();i++){
 				double value = 0;
 				for(int j = 0;j < nonSentimentList.size();j++){
-					double distance = new OrientationCompute().sentenceDistance(sentimentList.get(i), nonSentimentList.get(j));  //计算观点句与非观点句的距离
+					double distance = new SentenceProcessor().sentenceDistance(sentimentList.get(i), nonSentimentList.get(j));  //计算观点句与非观点句的距离
 					double weight = Math.exp(BETA*distance);
 					value += iniScoreNonSentiment[j] * weight;
 				}
@@ -375,8 +364,6 @@ public class OrientationCompute {
 		}	
 		return result;
 	}
-	
-	
 
 	/**
 	 * @param args
@@ -385,7 +372,9 @@ public class OrientationCompute {
 	public static void main(String[] args) throws Exception {
 	//	new OrientationCompute().calcDSOofSentence3( "", sentimentWords, positiveWords, negativeWords);
 	//	System.out.println(new OrientationCompute().calcDSOofSentence("在杭州玩的超开心www不想回日本了QAQ 我在这里:", sentimentWords));
-
+		
+		ArrayList<String> sentenceList = new SentenceProcessor().SplitToSentences("你真的是太二了啦！！发消息给你啦");
+		System.out.println(sentenceList);
 	}
 
 }
