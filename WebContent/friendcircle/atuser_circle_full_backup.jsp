@@ -152,6 +152,56 @@
 <script type="text/javascript" src="../js/json2.js"></script>
 <script type="text/javascript" src="../js/zfunc.js"></script>
 <title>用户微博人物关系分析</title>
+
+	<style>
+		#menuuu{
+			position:absolute;
+			border: 1px outset #F6F6F6 !important; 
+			border-color:#FFFFFF;
+			z-index:10000; 
+			left:300px; 
+			top:200px; 
+			display:none; 
+			width:100px; 
+			height:65px; 
+			background: #CCCCCC; 
+			filter:alpha(opacity:80);
+			opacity:0.8;
+			overflow: hidden;
+			
+		}
+		#menuuu ul{
+			padding-top: 5px;
+			padding-left: 2px;
+			margin:0px;
+			list-style-type:none;
+			vertical-align:middle;
+		}
+		#menuuu ul li {
+			padding:0px;
+			margin-top:1px;
+			border-top: 1px solid #F6F6F6 !important;	
+			border-bottom: 1px outset #F6F6F6 !important;
+			border-color:#FFFFFF;
+			font-family:"微软雅黑";
+			width:96px;
+			font-size:13px;
+			vertical-align: middle;
+			text-align:center;
+		}
+		#menuuu font {
+			padding-left: 4px;
+			vertical-align:top ;
+		}
+	</style>
+	
+	<script language="javascript">		
+		document.oncontextmenu=function()  
+            {  
+               return false;  
+            } 
+	</script>
+
 </head>
 <body>
 	<form name="myForm" method="post" action="">
@@ -166,6 +216,19 @@
     	</td></tr>
     	<tr><td>
     		<div id="main" style="height:500px"></div>
+    		
+    		<div id="menuuu" onMouseLeave ="this.style.display = 'none';">
+				<ul><!--右键弹出菜单-->		
+					<li id="menu_blood" onClick="alert('血缘分析');" onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
+						<img src="../images/menu_blood.png" /><font>血缘分析</font>
+					</li>
+					<li id="menu_influence" onClick="alert('影响分析');" onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
+						<img src="../images/menu_influence.png" /><font>影响分析</font>
+					</li>
+				</ul>
+			</div>
+   		
+    		
     	</td></tr>
 	</table>
 	</form>
@@ -181,13 +244,14 @@
 
 
 
-<script src="../echarts-2.2.7/build/dist/echarts.js"></script>
+<script src="../echarts-test/echarts-2.2.7/build/source/echarts.js"></script>
 <script type="text/javascript">
 
+		
         // 路径配置
         require.config({
             paths: {
-                echarts: '../echarts-2.2.7/build/dist'
+                echarts: '../echarts-test/echarts-2.2.7/build/dist'
             }
         });
         // 使用
@@ -271,6 +335,7 @@
                 			            minRadius : 20,
                 			            maxRadius : 30,
                 			            gravity: 1.1,
+                			            
                 			            scaling: 1.1,
                 			            roam: 'move',
                 			            nodes:[
@@ -284,7 +349,7 @@
 													for(String name : nameset){
 														String number = userMap.get(name);
 														out.print("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
-														//System.out.println("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
+														System.out.println("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 													}
 											}else{System.out.println("No users!!!");}
                 			                %>
@@ -353,10 +418,18 @@
         		 	}        		 	
         		 }
                
-                function focus(param) {                	
+                function focus(param) {       
+                	console.log(param);
                     var data = param.data;
+                    
                     var links = option.series[0].links;
                     var nodes = option.series[0].nodes;
+                    console.log(option.series[0].nodes);
+                    var event = param.event;
+					var pageX = event.pageX;
+					var pageY = event.pageY;
+					var menu = document.getElementById("menuuu");
+                    
                     if (
                         data.source !== undefined
                         && data.target !== undefined
@@ -369,17 +442,29 @@
                     	show(data.name,catenum);
                     	var info = '<%=usrInfoMap%>';
                     	var uidlist = '<%=usrInfoMap.keySet()%>';
-                    	//console.log(uidlist);
-                    	//console.log("uuuuuuuuuuuuuuu"+uidlist.length);
-                    	//for(var id in uidlist){
-                    		//console.log("XXXXXXX"+uidlist[id]);                  
-                    	//}                   	
+						option.series[0].nodes.push({category:2,name: 'dsb',value :1});
+						console.log("123");
+						console.log(option.series[0].nodes);
                     }
                 }
+                
+                function rightBt(param){
+					var menu = document.getElementById("menuuu");
+					var event = param.event;
+					var pageX = event.pageX;
+					var pageY = event.pageY;
+					menu.style.left = pageX + 'px';
+					menu.style.top = pageY + 'px';
+					menu.style.display = "block";
+				}
+                
                 myChart.on(ecConfig.EVENT.CLICK, focus)
                 myChart.on(ecConfig.EVENT.FORCE_LAYOUT_END, function () {
                     console.log(myChart.chart.force.getPosition());
                 });
+                
+                myChart.on(ecConfig.EVENT.CONTEXTMENU, rightBt);
+                myChart.setOption(option);  
             }
         );
     </script>

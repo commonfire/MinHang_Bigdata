@@ -7,29 +7,28 @@
 <%@ include file="../inc/conn.jsp"%>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link href="bootstrap/css/bootstrap.css" rel="stylesheet">
-<link href="font-awesome/css/font-awesome.css" rel="stylesheet" />
-<link rel="stylesheet" href="../css/inputstyle.css" type="text/css"/>
-<link rel="stylesheet" href="../css/table_basic.css" type="text/css"/>
-
-<style type="text/css" media="screen">
-#loadDiv {
-position:fixed;
-z-index:999;
-width:expression(document.body.clientWidth);
-height:expression(document.body.clientHeight);
-background-color:#FFFFFF;
-width:100%;
-height:100%;
-}
-.loadDiv-fix{width: 250px;height: 80px; line-height: 80px; position: absolute; left: 50%; margin-left: -125px; top: 50%; margin-top: -50px; background: rgba(0,0,0,0); border-radius: 6px; color: #fff; padding-left: 110px; box-sizing:border-box; font-size: 1.6rem;}
-.loadDiv-fix .load{width: 30px; height: 30px; display: block; position: absolute; left: 70px; top: 25px; -webkit-animation:myfirst 1.5s linear infinite ;}  
-.loadDiv-fix .loading{width: 80px; height: 80px; display: block; position: absolute; left: 10px; top: 0px;-webkit-animation:mysec 2s linear infinite ;}  
-</style>
-
-<title>关键词搜索用户</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+	<link href="font-awesome/css/font-awesome.css" rel="stylesheet" />
+	<link rel="stylesheet" href="../css/inputstyle.css" type="text/css"/>
+	<link rel="stylesheet" href="../css/table_basic.css" type="text/css"/>
 	
+	<style type="text/css" media="screen">
+		#loadDiv {
+		position:fixed;
+		z-index:999;
+		width:expression(document.body.clientWidth);
+		height:expression(document.body.clientHeight);
+		background-color:#FFFFFF;
+		width:100%;
+		height:100%;
+		}
+		.loadDiv-fix{width: 250px;height: 80px; line-height: 80px; position: absolute; left: 50%; margin-left: -125px; top: 50%; margin-top: -50px; background: rgba(0,0,0,0); border-radius: 6px; color: #fff; padding-left: 110px; box-sizing:border-box; font-size: 1.6rem;}
+		.loadDiv-fix .load{width: 30px; height: 30px; display: block; position: absolute; left: 70px; top: 25px; -webkit-animation:myfirst 1.5s linear infinite ;}  
+		.loadDiv-fix .loading{width: 80px; height: 80px; display: block; position: absolute; left: 10px; top: 0px;-webkit-animation:mysec 2s linear infinite ;}  
+	</style>
+		
+	<title>关键词搜索用户</title>	
 </head>
 <body>
 <!-- 爬取信息提示 -->
@@ -121,9 +120,8 @@ height:100%;
 		
 </script>
 
- <script>
+<script>
      var yes = 0;
-     console.log(yes);
      var loadDiv = document.getElementById('loadDiv');
      loadDiv.style.display='none';
      function show(){
@@ -133,8 +131,7 @@ height:100%;
     function statechange(){
             yes = <%=searchstate%>;
             if(yes != 1){setTimeout(show, 1000);}
-            else{ loadDiv.style.display='none';yes = 0;return ;}
-           
+            else{ loadDiv.style.display='none';yes = 0;return ;}        
         }
 </script>
 

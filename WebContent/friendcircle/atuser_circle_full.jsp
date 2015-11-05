@@ -366,14 +366,19 @@
                         console.log("选中了边 " + sourceNode.name + ' -> ' + targetNode.name + ' (' + data.weight + ')');
                     } else { // 点击的是点
                         console.log("选中了" + data.name + '(' + data.value + ')');
+                    	
                     	show(data.name,catenum);
                     	var info = '<%=usrInfoMap%>';
                     	var uidlist = '<%=usrInfoMap.keySet()%>';
-                    	//console.log(uidlist);
-                    	//console.log("uuuuuuuuuuuuuuu"+uidlist.length);
-                    	//for(var id in uidlist){
-                    		//console.log("XXXXXXX"+uidlist[id]);                  
-                    	//}                   	
+                    	/* console.log(uidlist);
+                    	console.log("uuuuuuuuuuuuuuu"+uidlist.length);
+                    	for(var id in uidlist){
+                    		console.log("XXXXXXX"+uidlist[id]);                  
+                    	}  */
+                    	option.series[0].nodes.push({category:2,name: 'dsb',value :1});
+                    	myChart.setOption(option); 
+						console.log("123");
+						console.log(option.series[0].nodes);
                     }
                 }
                 myChart.on(ecConfig.EVENT.CLICK, focus)

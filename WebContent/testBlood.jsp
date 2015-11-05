@@ -52,21 +52,19 @@
 			vertical-align:top ;
 		}
 	</style>
-	<script language="javascript">
-		
-		
+	<script language="javascript">		
 		document.oncontextmenu=function()  
             {  
                return false;  
             } 
-
-		
 	</script>
+	
 </head>
 <body >
     <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
     <div id="main" style="width:800px;height:400px;overflow:auto;">
     </div>
+        
 	<div id="menuuu" onMouseLeave ="this.style.display = 'none';">
 		<ul><!--右键弹出菜单-->		
 			<li id="menu_blood" onClick="alert('血缘分析');" onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
@@ -79,12 +77,12 @@
 	</div>
     <!-- ECharts单文件引入 -->
     
-    <script src="./echarts-2.2.7/build/dist/echarts_mhf.js"></script>
+    <script src="./echarts-test/echarts-2.2.7/build/dist/echarts_mhf.js"></script>
     <script type="text/javascript">
         // 路径配置
         require.config({
             paths: {
-                echarts: './echarts-2.2.7/build/dist'
+                echarts: './echarts-test/echarts-2.2.7/build/dist'
             }
         });
         
@@ -93,23 +91,22 @@
             [
                 'echarts',
                 'echarts/chart/force', // 使用柱状图就加载bar模块，按需加载
-				'echarts/chart/chord', // 使用和弦图就加载bar模块，按需加载
-                'echarts/theme/macarons'
+				'echarts/chart/chord', // 使用和弦图就加载bar模块，按需加载               
             ],
            
             function (ec) {
                 // 基于准备好的dom，初始化echarts图表
-                var myChart = ec.init(document.getElementById('main'),'macarons'); 
+                var myChart = ec.init(document.getElementById('main')); 
                 
                   
-							  var nodes = [];
+							 /*  var nodes = [];
 							  var links = [];
 							  var constMaxDepth = 4;
 							  var constMaxChildren = 3;
 							  var constMinChildren = 2;
 							  var constMaxRadius = 10;
-							  var constMinRadius = 2;
-							  var mainDom = document.getElementById('main');
+							  var constMinRadius = 2; */
+							 // var mainDom = document.getElementById('main');
 							  
 							  
 							  option = {

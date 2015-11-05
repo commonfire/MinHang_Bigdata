@@ -70,12 +70,12 @@
 
     <!-- ECharts单文件引入 -->
     
-    <script src="./echarts-2.2.7/build/dist/echarts.js"></script>
+    <script src="./echarts-test/echarts-2.2.7/build/dist/echarts.js"></script>
     <script type="text/javascript">
         // 路径配置
         require.config({
             paths: {
-                echarts: './echarts-2.2.7/build/dist'
+                echarts: './echarts-test/echarts-2.2.7/build/dist'
             }
         });
         

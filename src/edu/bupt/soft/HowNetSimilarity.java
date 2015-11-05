@@ -1,10 +1,10 @@
 package edu.bupt.soft;
 
-import java.sql.ResultSet;
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 
-import edu.bupt.jdbc.JDBCConnect;
-import edu.bupt.jdbc.SelectOperation;
 import ruc.irm.similarity.word.hownet2.concept.LiuConceptParser;
 
 
@@ -119,8 +119,9 @@ public class HowNetSimilarity {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args){
 		// TODO Auto-generated method stub
+
 	}
 
 }

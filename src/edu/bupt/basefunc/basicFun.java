@@ -3,8 +3,7 @@ import java.util.*;
 import org.json.*;
 import edu.bupt.jdbc.*;
 import java.sql.*;
-public class basicFun {
-	
+public class basicFun {	
 	public static HashMap<String,String> cateMapBuild(String[] cateList,String[] cateChineseList){
 		HashMap<String,String> userInfoCateMap = new HashMap<String,String>();
 		for(int i=0;i<cateList.length;i++){
@@ -59,6 +58,12 @@ public class basicFun {
 		map.put(name1,list2);
 		HashMap<String,String> mapTemp = new HashMap<String,String>();			
 		mapTemp.put(name1,number);				
-		map.get(mainUser).add(mapTemp);
+		map.get(mainUser).add(mapTemp);		
 	}
+	
+	public static void main(String[] args) {
+		
+	}
+	
+	
 }

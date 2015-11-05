@@ -12,17 +12,32 @@
 	<link href="font-awesome/css/font-awesome.css" rel="stylesheet" />
 	<link rel="stylesheet" href="../css/inputstyle.css" type="text/css"/>
 	<link rel="stylesheet" href="../css/table_basic.css" type="text/css"/>
-	<title>关键词搜索用户</title>
 	
-	<script language="javascript">
-		function keywordSearch(){
-			document.myForm.action="";
-			document.myForm.submit();
+	<style type="text/css" media="screen">
+		#loadDiv {
+		position:fixed;
+		z-index:999;
+		width:expression(document.body.clientWidth);
+		height:expression(document.body.clientHeight);
+		background-color:#FFFFFF;
+		width:100%;
+		height:100%;
 		}
-		
-	</script>
+		.loadDiv-fix{width: 250px;height: 80px; line-height: 80px; position: absolute; left: 50%; margin-left: -125px; top: 50%; margin-top: -50px; background: rgba(0,0,0,0); border-radius: 6px; color: #fff; padding-left: 110px; box-sizing:border-box; font-size: 1.6rem;}
+		.loadDiv-fix .load{width: 30px; height: 30px; display: block; position: absolute; left: 70px; top: 25px; -webkit-animation:myfirst 1.5s linear infinite ;}  
+		.loadDiv-fix .loading{width: 80px; height: 80px; display: block; position: absolute; left: 10px; top: 0px;-webkit-animation:mysec 2s linear infinite ;}  
+	</style>	
+	
+	<title>关键词搜索用户</title>	
 </head>
 <body>
+<!-- 爬取信息提示 -->
+ <div id="loadDiv">
+        <div class="loadDiv-fix">
+            <img class="load" src="../images/crawler_load.gif" />
+            <div align="center"><font size='3' color='black'>正在爬取中....</font></div>
+        </div>
+</div>
 
 <form  name="myForm" method="post" action="">
 <%
@@ -30,6 +45,7 @@
 	request.setCharacterEncoding("utf-8");
     String keyword = request.getParameter("keyword")!=null?request.getParameter("keyword"):"";
     session.setAttribute("keyword", keyword);
+    int searchstate = 0;
 %>
 <table align="center" width="80%" border="0">
 	<tr>
@@ -59,10 +75,10 @@
 				<%
 				if(keyword!=""){					
 					if(!SelectOperation.containsField("keyword", keyword, "t_user_keyword", conn)){
-						Thread.sleep(300*1000);  //5min interval
+						//Thread.sleep(300*1000);  //5min interval
 						ExecuteShell.executeShell(keyword,"keyuser");	
 						while(true){
-								int searchstate = SelectOperation.selectEndState("searchstate",conn);
+								searchstate = SelectOperation.selectEndState("searchstate",conn);
 								if(searchstate==1) break;	
 						}
 					}
@@ -95,6 +111,32 @@
 	</tr>
 </table>
 </form>
+
+<script language="javascript">
+		function keywordSearch(){
+			document.myForm.action="";
+			document.myForm.submit();
+			show();
+		}
+		
+</script>
+	
+<script>
+     var yes = 0;
+     var loadDiv = document.getElementById('loadDiv');
+     loadDiv.style.display='none';
+     function show(){
+            loadDiv.style.display='block';
+            statechange();
+        }
+    function statechange(){
+            yes = <%=searchstate%>;
+            if(yes != 1){setTimeout(show, 1000);}
+            else{ loadDiv.style.display='none';yes = 0;return ;}        
+        }
+</script>
+
+
 </body>
 </html>
 <%@ include file="../inc/conn_close.jsp"%>
