@@ -9,6 +9,7 @@ import org.ansj.domain.Nature;
 import org.ansj.domain.NewWord;
 import org.ansj.recognition.AsianPersonRecognition;
 import org.ansj.recognition.ForeignPersonRecognition;
+import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.ansj.util.Graph;
 import org.nlpcn.commons.lang.tire.domain.SmartForest;
 import org.nlpcn.commons.lang.util.CollectionUtil;
@@ -164,5 +165,15 @@ public class LearnTool {
 		if (branch != null && branch.getParam() != null) {
 			branch.getParam().setActive(true);
 		}
+	}
+	
+	public static void main(String[] args) {
+		LearnTool learnTool = new LearnTool();
+		//NlpAnalysis.parse("说过，社交软件也是打着沟通的平台，让无数寂寞男女有了肉体与精神的寄托。", learnTool) ;
+        NlpAnalysis.parse("难道社会没有一点正能量吗？最讨厌这种愤青似的语言？哗众取宠", learnTool) ;
+        //NlpAnalysis.parse("张艺谋的卡宴，马明哲的戏",learnTool) ;
+
+        //取得学习到的topn新词,返回前10个。这里如果设置为0则返回全部
+        System.out.println(learnTool.getTopTree(10));
 	}
 }

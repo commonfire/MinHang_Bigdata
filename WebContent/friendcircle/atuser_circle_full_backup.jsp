@@ -16,7 +16,7 @@
 	String mainUser = request.getParameter("alias")!=null?request.getParameter("alias"):"";
 	JSONObject jsonObjAll = new JSONObject();
 	JSONObject cateObject = new JSONObject();
-	
+	JSONObject id_name_Object = new JSONObject();
 	//String allCate = "USERID,USERALIAS,LOCATION,SEX,BRIEF";
 	//String cateChinese = "用户ID,昵称,住址,性别,简介";
 	String allCate = "USERID,USERALIAS,LOCATION,SEX,BIRTHDAY,BRIEF,DOMAIN,BLOG";
@@ -138,6 +138,7 @@
 		
 		 cateObject = basicFun.MapToJSONObj(userInfoCateMap);
 		 jsonObjAll = basicFun.MapToJSONObj(usrInfoMap);	
+		 id_name_Object = basicFun.MapToJSONObj(id_name_map);
 		// System.out.println(usrInfoMap);
 		
 	}
@@ -151,6 +152,8 @@
 <link href="../css/bootstrap.min.css" rel="stylesheet">
 <script type="text/javascript" src="../js/json2.js"></script>
 <script type="text/javascript" src="../js/zfunc.js"></script>
+<script src="../jquery-2.0.3/jquery-2.0.3.min.js"></script>
+<script src="../jquery-2.0.3/jquery-2.0.3.js"></script>
 <title>用户微博人物关系分析</title>
 
 	<style>
@@ -219,8 +222,8 @@
     		
     		<div id="menuuu" onMouseLeave ="this.style.display = 'none';">
 				<ul><!--右键弹出菜单-->		
-					<li id="menu_blood" onClick="alert('血缘分析');" onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
-						<img src="../images/menu_blood.png" /><font>血缘分析</font>
+					<li id="menu_blood"  onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
+						<img src="../images/menu_blood.png" /><font>关系分析</font>
 					</li>
 					<li id="menu_influence" onClick="alert('影响分析');" onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
 						<img src="../images/menu_influence.png" /><font>影响分析</font>
@@ -285,7 +288,7 @@
                 			    },
                 			    legend: {
                 			        x: 'left',
-                			        data:['微博一级@用户','微博二级@用户']
+                			        data:['微博一级@用户','微博二级@用户','微博三级@用户']
                 			    },
                 			    series : [
                 			        {
@@ -301,6 +304,10 @@
                 			                },
                 			                {
                 			                    name: '微博二级@用户'
+                			                },
+                			                
+                			                {
+                			                    name: '微博三级@用户'
                 			                }
                 			            ],
                 			            itemStyle: {
@@ -339,7 +346,7 @@
                 			            scaling: 1.1,
                 			            roam: 'move',
                 			            nodes:[
-												{category:0,name: '<%=mainUser%>',value :6},
+												{category:0,uid:1234,name: '<%=mainUser%>',value :6},
                 			                <%
 //                 			                while(rs1.next()){
 //                 			                	out.print("{category:1, name: '"+rs1.getString("ATUSER")+"',value :"+rs1.getString("TOTALNUMBER")+"},");	
@@ -348,6 +355,7 @@
 													Set<String> nameset = userMap.keySet();
 													for(String name : nameset){
 														String number = userMap.get(name);
+														//out.print("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 														out.print("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 														System.out.println("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 													}
@@ -377,13 +385,17 @@
                 			    ]
 
                 };
-                 
+                
+                var willShow;
                 myChart.setOption(option); // 为echarts对象加载数据
                 var ecConfig = require('echarts/config');
                 var jsonObj = <%=jsonObjAll%>           
                 var cateObj =<%=cateObject%>
+                var id_name_Obj = <%=id_name_Object%>
+                //console.log(id_name_Obj);
                 var infoJson =JSON.stringify(jsonObj);
-                console.log(infoJson);
+               // console.log(infoJson);
+                console.log(jsonObj);
                 //var jsonObj2 = jsonObj["北邮-民航"];
                 //console.log(jsonObj2["SEX"].toString());
                 //var jsonString2 = JSON.stringify(jsonObj2);
@@ -438,17 +450,58 @@
                         var targetNode = nodes.filter(function (n) {return n.name == data.target})[0];
                         console.log("选中了边 " + sourceNode.name + ' -> ' + targetNode.name + ' (' + data.weight + ')');
                     } else { // 点击的是点
+                    	console.log("[[[[[[[]]]]]]]"+data.uid);
                         console.log("选中了" + data.name + '(' + data.value + ')');
                     	show(data.name,catenum);
                     	var info = '<%=usrInfoMap%>';
                     	var uidlist = '<%=usrInfoMap.keySet()%>';
-						option.series[0].nodes.push({category:2,name: 'dsb',value :1});
+						//option.series[0].nodes.push({category:2,name: 'dsb',value :1});
 						console.log("123");
 						console.log(option.series[0].nodes);
                     }
                 }
                 
+                $(function(){
+        			$("#menu_blood").click(function(param){
+        				console.log(param);
+        				var uid = jsonObj[willShow]['USERID'];
+        				console.log("((()))"+uid);
+        				var data = {'uid':uid};
+        					$.ajax({
+        						async:false,
+        						url:"/weiboanalysis/interface/friendcircle_expand.jsp?",
+        						type:'GET',
+        						dataType:'text',
+        						data:data,
+        						success:function(text){
+        							//alert("We Get data:"+text);
+        							var JsonString = text;
+        							var JsonObj = JSON.parse(JsonString);
+        							var JsonNodeObj = JsonObj['nodes'];
+        							var JsonLinkObj = JsonObj['links'];        							
+        							for(var i=0;i<JsonNodeObj.length;i++){
+        								var cur_node = JsonNodeObj[i];
+      									var isExist = option.series[0].nodes.indexOf(cur_node,0);
+      									if(isExist != -1) continue;
+        								option.series[0].nodes.push(cur_node);
+        								myChart.setOption(option);  
+        							}
+        							for(var i=0;i<JsonLinkObj.length;i++){
+        								var cur_link = JsonLinkObj[i];     								
+        								option.series[0].links.push(cur_link);
+        								myChart.setOption(option);  
+        							}
+        						},
+        						error:function(){
+        							alert("不通");
+        						}
+        					});
+        				});
+        			})
                 function rightBt(param){
+                	var data = param.data;
+                	willShow = data.name;
+					console.log("(((((((((())))))))))"+id_name_Obj[willShow]);
 					var menu = document.getElementById("menuuu");
 					var event = param.event;
 					var pageX = event.pageX;
@@ -456,6 +509,7 @@
 					menu.style.left = pageX + 'px';
 					menu.style.top = pageY + 'px';
 					menu.style.display = "block";
+					
 				}
                 
                 myChart.on(ecConfig.EVENT.CLICK, focus)
@@ -467,6 +521,7 @@
                 myChart.setOption(option);  
             }
         );
+       
     </script>
 </html>
 <%@ include file="../inc/conn_close.jsp"%>

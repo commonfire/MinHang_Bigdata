@@ -5,7 +5,7 @@
 <%
 Properties pro = new Properties();
 String realpath = request.getRealPath("/WEB-INF/classes/");
-Class.forName("oracle.jdbc.driver.OracleDriver").newInstance();
+Class.forName("oracle.jdbc.driver.OracleDriver");
 FileInputStream in = null;
 try{
 	in = new FileInputStream(realpath+"config.properties");
