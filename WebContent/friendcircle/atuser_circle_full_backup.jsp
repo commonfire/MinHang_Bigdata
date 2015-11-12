@@ -223,7 +223,7 @@
     		<div id="menuuu" onMouseLeave ="this.style.display = 'none';">
 				<ul><!--右键弹出菜单-->		
 					<li id="menu_blood"  onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
-						<img src="../images/menu_blood.png" /><font>关系分析</font>
+						<img src="../images/menu_blood.png" /><font>人物关系分析</font>
 					</li>
 					<li id="menu_influence" onClick="alert('影响分析');" onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
 						<img src="../images/menu_influence.png" /><font>影响分析</font>
@@ -396,15 +396,12 @@
                 var infoJson =JSON.stringify(jsonObj);
                // console.log(infoJson);
                 console.log(jsonObj);
-                //var jsonObj2 = jsonObj["北邮-民航"];
-                //console.log(jsonObj2["SEX"].toString());
-                //var jsonString2 = JSON.stringify(jsonObj2);
-                //console.log(jsonString2);
                 var catelist1 = '<%=allCate%>'
                 var cateArray = catelist1.split(",");
                 var catenum = cateArray.length;
               
-                function show(usrName){
+                	//点击节点，展示人物基本信息
+               function show(usrName){
         		 	var table = document.getElementById('tableContent');
         		 	if(table.style.display=='block' & table.getAttribute('usrName') == usrName){
         		 		table.setAttribute('style',"display:none;width:300px;position:relative; top:30%; left:10%;");		 		
@@ -429,15 +426,15 @@
         		 		table.setAttribute('style',"display:block;width:300px;position:absolute; top:30%; left:10%;");
         		 	}        		 	
         		 }
+          
+           function focus(param) {       
+           	console.log(param);
+               var data = param.data;
                
-                function focus(param) {       
-                	console.log(param);
-                    var data = param.data;
-                    
-                    var links = option.series[0].links;
-                    var nodes = option.series[0].nodes;
-                    console.log(option.series[0].nodes);
-                    var event = param.event;
+               var links = option.series[0].links;
+               var nodes = option.series[0].nodes;
+               console.log(option.series[0].nodes);
+               var event = param.event;
 					var pageX = event.pageX;
 					var pageY = event.pageY;
 					var menu = document.getElementById("menuuu");
@@ -461,12 +458,28 @@
                     }
                 }
                 
-                $(function(){
+                
+               //判断是否存在双向link
+           function contains_reverse_link(option,cur_link){
+        	   	var cur_source = cur_link["source"];
+        	      var cur_target = cur_link["target"];
+        	       var link_set  = option.series[0].links;
+        	        for(var i = 0;i<link_set.length;i++){
+        	        	   	//存在反向link
+        	        		if(link_set[i]["source"] == cur_target && link_set[i]["target"] == cur_source){
+        	        		   return true;
+        	        	   }
+        	        }
+        	      return false;
+          		 }
+                
+               $(function(){
         			$("#menu_blood").click(function(param){
         				console.log(param);
         				var uid = jsonObj[willShow]['USERID'];
         				console.log("((()))"+uid);
         				var data = {'uid':uid};
+        				//异步从后台请求数据，绘制右键单击扩展人物关系
         					$.ajax({
         						async:false,
         						url:"/weiboanalysis/interface/friendcircle_expand.jsp?",
@@ -485,11 +498,20 @@
       									if(isExist != -1) continue;
         								option.series[0].nodes.push(cur_node);
         								myChart.setOption(option);  
+        							/* 	console.log("{{{{{{{");
+        								console.log(option.series[0].nodes);
+        								console.log("}}}}}}"); */
         							}
         							for(var i=0;i<JsonLinkObj.length;i++){
-        								var cur_link = JsonLinkObj[i];     								
-        								option.series[0].links.push(cur_link);
+        								var cur_link = JsonLinkObj[i];     
+        								if(contains_reverse_link(option,cur_link) == false){
+        									option.series[0].links.push(cur_link);
+        								}        								
+        								//console.log("*******"+"source: "+cur_link["source"]+"target: "+cur_link["target"]);
         								myChart.setOption(option);  
+        								/* console.log("{{{{{{{");
+        								console.log(option.series[0].links);
+        								console.log("}}}}}}"); */
         							}
         						},
         						error:function(){
@@ -501,7 +523,7 @@
                 function rightBt(param){
                 	var data = param.data;
                 	willShow = data.name;
-					console.log("(((((((((())))))))))"+id_name_Obj[willShow]);
+					//console.log("(((((((((())))))))))"+id_name_Obj[willShow]);
 					var menu = document.getElementById("menuuu");
 					var event = param.event;
 					var pageX = event.pageX;
