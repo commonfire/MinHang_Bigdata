@@ -1,9 +1,14 @@
 package org.ansj.test;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Vector;
 
 import org.ansj.domain.Term;
@@ -42,7 +47,7 @@ public class WordSegAnsj {
 	/**
 	 * 调用Ansj接口对句子进行分词操作，只保留名动形副的词语
 	 * @param str    待切词的句子
-	 * @return
+	 * @return       返回分词结果
 	 */
 	public static Vector<String> split(String str){
 		Vector<String> strSeg = new Vector<String>();
@@ -105,7 +110,8 @@ public class WordSegAnsj {
 		return words;
 	}
 	
-
+	
+	
 	public static void main(String[] args) throws IOException {
 //		HashSet<String> all = new HashSet<String>();
 ////		all.add("这是一个计算机和服务。");
@@ -123,10 +129,16 @@ public class WordSegAnsj {
 //		System.out.println("消耗时间(ms):"+(System.currentTimeMillis() - start));
 //		System.out.println(ToAnalysis.parse("这是一个计算机和服务。"));
 //		System.out.println(WordSegment.splitOriginal("这是一个计算机和服务。"));
-		ArrayList<SentimentWordItem> sentimentWords = new OrientationCompute().sentimentWords;
-		List<Term> parse = ToAnalysis.parse("在杭州玩的超开心www不想回日本了QAQ 我在这里:");
-		System.out.println(parse);
-//		System.out.println(WordSegAnsj.getSentimentWord(words, sentimentWords));
+//		ArrayList<SentimentWordItem> sentimentWords = new OrientationCompute().sentimentWords;
+			
+//		List<Term> parse = ToAnalysis.parse("00:19:53 时速:9.22km/h");
+//		System.out.println(parse);
+		
+//		String a = "00:19:53 时速:9.22km/h";
+//		String[] phrase = a.split("[^\u4E00-\u9FA5]");
+//		for(String s : phrase){
+//			if(!"".equals(s)) System.out.println(s);
+//		}	
 
 		
 	}
