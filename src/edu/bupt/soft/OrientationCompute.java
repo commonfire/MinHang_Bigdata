@@ -20,12 +20,12 @@ import edu.bupt.jdbc.SelectOperation;
  */
 public class OrientationCompute {
 	
-	private static final double BETA = 0.5;                      //算法2的加权系数BETA>=0
+	 private static final double BETA = 0.5;                      //算法2的加权系数BETA>=0
     private static final int BASEWORD_COUNT = 40;                //褒/贬基准词表词数
-    public static ArrayList<SentimentWordItem> sentimentWords;   //情感词库词语
-    public static ArrayList<BaseWordItem> positiveWords;         //基准褒义词词语
-    public static ArrayList<BaseWordItem> negativeWords;         //基准贬义词词语
-    public static HashMap<String, Float> emoticons;              //表情基准词库
+    private static ArrayList<SentimentWordItem> sentimentWords;   //情感词库词语
+    private static ArrayList<BaseWordItem> positiveWords;         //基准褒义词词语
+    private static ArrayList<BaseWordItem> negativeWords;         //基准贬义词词语
+    private static HashMap<String, Float> emoticons;              //表情基准词库
     
     //加载词库，只需要一次
     static{
@@ -56,7 +56,6 @@ public class OrientationCompute {
 				e.printStackTrace();
 			}
 		}
-		
     }
     
     /**
@@ -82,7 +81,6 @@ public class OrientationCompute {
 		}
     }
     
-    
     /**
      * 加载贬义基准词词库
      */
@@ -104,7 +102,6 @@ public class OrientationCompute {
 				e.printStackTrace();
 			}
 		}     
-
     }
     
     /**
@@ -216,7 +213,6 @@ public class OrientationCompute {
 		return result;
 	}
 	
-	
 	/**
 	 * 计算非观点句句子的倾向值Degree of Sentiment Orientation，对应词语情感值改进算法2
 	 * @param sentence           输入句子
@@ -271,10 +267,6 @@ public class OrientationCompute {
 		return result;
 	}
 	
-	
-
-	
-	
 	/**
 	 * 计算文本的倾向值算法1
 	 * @param blogContent  输入文本内容
@@ -292,7 +284,7 @@ public class OrientationCompute {
 		//计算每个观点句子的倾向值，调用calcDSOofSentences()方法
 		if(sentimentList.size()!=0){
 			for(int i = 0;i < sentimentList.size();i++){
-				 value += new OrientationCompute().calcDSOofSentence(sentimentList.get(i), sentimentWords);
+				 value += calcDSOofSentence(sentimentList.get(i), sentimentWords);
 			}
 			score = value/sentimentList.size();
 		}else{
@@ -302,9 +294,8 @@ public class OrientationCompute {
 		return score;
 	}
 	
-	
 	/**
-	 * 计算文本的倾向值算法2
+	 * 计算文本的倾向值算法2,考虑非观点句对观点句的影响
 	 * @param blogContent  输入文本内容
 	 * @return             文本情感倾向值
 	 * @throws Exception 
@@ -313,20 +304,21 @@ public class OrientationCompute {
 		//获得情感词库，调用SentenceProcessor的getSentimentSentences()方法
 		double score = 0;          //观点句子的情感总分
 		double result = 0;         //观点句子的情感平均分
-		ArrayList<String> sentenceList = new SentenceProcessor().SplitToSentences(blogContent);                //将文本内容分句
+		SentenceProcessor sentenceProcessor = new SentenceProcessor();
+		ArrayList<String> sentenceList = sentenceProcessor.SplitToSentences(blogContent);                //将文本内容分句
 	
 		ArrayList<String> sentimentList = new ArrayList<String>();
 		ArrayList<String> nonSentimentList = new ArrayList<String>();
-		sentimentList = new SentenceProcessor().getSentimentSentences(sentenceList, sentimentWords);            //获得博客内容中观点句子
-		nonSentimentList = new SentenceProcessor().getNonSentimentSentences(sentenceList, sentimentWords);      //获得博客内容中非观点句子
-		
+		sentimentList = sentenceProcessor.getSentimentSentences(sentenceList, sentimentWords);            //获得博客内容中观点句子
+		nonSentimentList = sentenceProcessor.getNonSentimentSentences(sentenceList, sentimentWords);      //获得博客内容中非观点句子
 
 		//文本倾向值算法2的主体实现
-		if(sentimentList.size()==0){                    //文本中无观点句
+		if(sentimentList.size()==0){          //文本中无观点句
 			if(nonSentimentList.size()!=0){
 				//case_1_nonSentiment
 				for(int i = 0;i < nonSentimentList.size();i++){
-					 score += new OrientationCompute().calcDSOofSentence3(nonSentimentList.get(i), sentimentWords, positiveWords, negativeWords);
+					 //计算非观点句分数
+					 score += calcDSOofSentence3(nonSentimentList.get(i), sentimentWords, positiveWords, negativeWords);
 				}
 				result = score/nonSentimentList.size();
 			}else{
@@ -337,27 +329,25 @@ public class OrientationCompute {
 		}else if(nonSentimentList.size()==0){           //文本中只有观点句，直接计算观点句情感倾向平均值作为文本情感倾向
 			//case_3_sentiment
 			for(int i = 0;i < sentimentList.size();i++){
-				 score += new OrientationCompute().calcDSOofSentence(sentimentList.get(i), sentimentWords);
+				 score += calcDSOofSentence(sentimentList.get(i), sentimentWords);
 			}
 			result = score/sentimentList.size();
 		}else{
-			//case_4_sentiment&nonSentiment
-			double[] iniScoreNonSentiment = new double[nonSentimentList.size()];                                    //非观点句子初始值
-			
-			//计算每个非观点句子的倾向值，作为非观点句子初始值
-			//TODO 词语相似度算法更改处
+			//case_4_sentiment&nonSentiment 算法主要部分 
+			double[] iniScoreNonSentiment = new double[nonSentimentList.size()];         //非观点句子初始值	
+			//计算每个非观点句子的倾向值，作为非观点句子初始值  TODO 词语相似度算法更改处
 			for(int i = 0;i < nonSentimentList.size();i++){
-				iniScoreNonSentiment[i] = new OrientationCompute().calcDSOofSentence3(nonSentimentList.get(i), sentimentWords, positiveWords, negativeWords);
+				iniScoreNonSentiment[i] = calcDSOofSentence3(nonSentimentList.get(i), sentimentWords, positiveWords, negativeWords);
 			}
 
-			for(int i = 0;i < sentimentList.size();i++){
-				double value = 0;
-				for(int j = 0;j < nonSentimentList.size();j++){
-					double distance = new SentenceProcessor().sentenceDistance(sentimentList.get(i), nonSentimentList.get(j));  //计算观点句与非观点句的距离
-					double weight = Math.exp(BETA*distance);
-					value += iniScoreNonSentiment[j] * weight;
+			for(String sentimentSentence: sentimentList){
+					double value = 0;
+					for(int j = 0;j < nonSentimentList.size();j++){
+						double distance = sentenceProcessor.sentenceDistance(sentimentSentence, nonSentimentList.get(j));  //计算观点句与非观点句的距离
+						double weight = Math.exp(BETA*distance);
+						value += iniScoreNonSentiment[j] * weight;
 				}
-				 score += value/nonSentimentList.size();     //////////////////////////////此处处理需讨论再确定////////////////////
+				 score += calcDSOofSentence(sentimentSentence, sentimentWords) + value/nonSentimentList.size();  //对情感句分数进行修正   TODO 此处处理需讨论再确定！！！
 			}
 			//所有观点句子的平均观点倾向值作为文本内容的倾向值
 			result = score/sentimentList.size();	
@@ -372,9 +362,6 @@ public class OrientationCompute {
 	public static void main(String[] args) throws Exception {
 	//	new OrientationCompute().calcDSOofSentence3( "", sentimentWords, positiveWords, negativeWords);
 	//	System.out.println(new OrientationCompute().calcDSOofSentence("在杭州玩的超开心www不想回日本了QAQ 我在这里:", sentimentWords));
-		
-		ArrayList<String> sentenceList = new SentenceProcessor().SplitToSentences("你真的是太二了啦！！发消息给你啦");
-		System.out.println(sentenceList);
 	}
 
 }

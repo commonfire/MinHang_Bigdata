@@ -71,10 +71,10 @@ public class WordCompute {
 	}
 	
 	public static void main(String[] args) {
-		Vector<String> a = new Vector<>();
-		a.add("一不小心");
-		ArrayList<SentimentWordItem> sentimentWords = new OrientationCompute().sentimentWords;
-		calSentiWord(a, sentimentWords);
+//		Vector<String> a = new Vector<>();
+//		a.add("一不小心");
+//		ArrayList<SentimentWordItem> sentimentWords = new OrientationCompute().sentimentWords;
+//		calSentiWord(a, sentimentWords);
 	}
 	
 

@@ -46,10 +46,17 @@ public class DataToJSON {
 	}
 	
 	public static void main(String[] args) throws SQLException {
-		String userID = "1152369551";
+		String userID = "1";
 		Connection conn = SQLHelper.getConnection();
 		ResultSet rs1 = SelectOperation.selectAtuser(userID,"5",conn);
 		ResultSet rs2 = SelectOperation.selectAlias(userID, conn);
+		if(!rs1.next() || null == rs1 || !rs2.next() || null == rs2)System.out.println("ddd");
+	
+		else{
+			System.out.println(friendExpandJSON(rs2, rs1));
+		}
+		conn.close();
+		
 		
 //		while(rs1.next()){
 //			System.out.println(rs1.getString("atuser"));
@@ -57,7 +64,7 @@ public class DataToJSON {
 //		while(rs2.next()){
 //			System.out.println(rs2.getString("userAlias"));
 //		}
-		System.out.println(friendExpandJSON(rs2, rs1));
+		
 		
 	}
 

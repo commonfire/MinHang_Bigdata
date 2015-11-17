@@ -37,12 +37,14 @@
 	<tbody>
 		<%
 			if(!userID.equals("")){
-			ExecuteShell.executeShell(userID, "userinfo");
-					while (true) {
-						int userinfostate = SelectOperation.selectEndState("userinfostate", conn);
-						if (userinfostate == 1)
-							break;
-					}
+			if(!SelectOperation.containsField("userID", userID, "t_user_info", conn)) {  //不重复爬取用户信息
+				ExecuteShell.executeShell(userID, "userinfo");
+						while (true) {
+							int userinfostate = SelectOperation.selectEndState("userinfostate", conn);
+							if (userinfostate == 1)
+								break;
+						}
+				}
 			ResultSet rs = SelectOperation.selectUserinfo(userID, conn);
 			if (rs != null) {
 				try {

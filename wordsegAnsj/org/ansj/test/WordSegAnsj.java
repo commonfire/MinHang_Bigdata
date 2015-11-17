@@ -131,15 +131,16 @@ public class WordSegAnsj {
 //		System.out.println(WordSegment.splitOriginal("这是一个计算机和服务。"));
 //		ArrayList<SentimentWordItem> sentimentWords = new OrientationCompute().sentimentWords;
 			
-//		List<Term> parse = ToAnalysis.parse("00:19:53 时速:9.22km/h");
-//		System.out.println(parse);
+
 		
 //		String a = "00:19:53 时速:9.22km/h";
 //		String[] phrase = a.split("[^\u4E00-\u9FA5]");
 //		for(String s : phrase){
 //			if(!"".equals(s)) System.out.println(s);
-//		}	
-
+//		}	 
+		
+		List<Term> parse = ToAnalysis.parse("今天我看了个微电影");
+		System.out.println(parse);
 		
 	}
 

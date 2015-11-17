@@ -13,17 +13,25 @@ if(null == userID){
 	return;
 }
 if(!SelectOperation.containsField("userID", userID, "t_user_weibocontent_atuser", conn)){
-	ExecuteShell.executeShell(userID,"weibocontent_userinfo");	//爬取用户第一层关系
+	ExecuteShell.executeShell(userID,"weibocontent_userinfo");	//右键动态扩展，爬取用户关系
 	while(true){
 			int searchstate = SelectOperation.selectEndState("contentstate",conn);
 			if(searchstate==1) break;	
 	}
 	UpdateOperation.updateEndState("contentstate");
 }
+try{
+	rsRelation = SelectOperation.selectAtuser(userID,"5",conn);  
+	rsUserName = SelectOperation.selectAlias(userID, conn);
+	if(!rsRelation.next() || null == rsRelation || !rsUserName.next() || null == rsUserName) out.write("{\"result\":\"0\"}");
+	else out.write(DataToJSON.friendExpandJSON(rsUserName, rsRelation)); 
+	rsRelation.close();
+	rsUserName.close();
+}catch(Exception e){
+	e.printStackTrace();	
+}
 
-rsRelation = SelectOperation.selectAtuser(userID,"5",conn);  
-rsUserName = SelectOperation.selectAlias(userID, conn);
-out.write(DataToJSON.friendExpandJSON(rsUserName, rsRelation)); //
+
 
 
 /* out.write("{\"nodes\":[{\"category\":\"2\",\"name\":\"Bill\",\"value\":\"3\"},{\"category\":\"2\",\"name\":\"Lucy\",\"value\":\"3\"}],"
