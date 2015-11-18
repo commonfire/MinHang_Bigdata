@@ -8,8 +8,6 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<link href="bootstrap/css/bootstrap.css" rel="stylesheet">
-	<link href="font-awesome/css/font-awesome.css" rel="stylesheet" />
 	<link rel="stylesheet" href="../css/inputstyle.css" type="text/css"/>
 	<link rel="stylesheet" href="../css/table_basic.css" type="text/css"/>
 	
@@ -90,9 +88,9 @@
 					<td><%=rs.getRow()%></td>
 					<td><%=keyword%></td>
 					<td><%=rs.getString("userAlias")!=null?rs.getString("userAlias"):""%></td> 
-				    <td><a href=<%="keyword_weibo.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询"></a></td>  
-				    <td><a href=<%="keyword_userinfo.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询"></a></td>  
-				    <td><a href=<%="../friendcircle/atuser_circle_full.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询"></a></td>  
+				    <td><a href=<%="keyword_weibo.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询" onClick="show1()"></a></td>  
+				    <td><a href=<%="keyword_userinfo.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询"  onClick="show1()"></a></td>  
+				    <td><a href=<%="../friendcircle/atuser_circle_full.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询"  onClick="show1()"></a></td>  
 				</tr>
 				<%
 							}
@@ -134,6 +132,10 @@
             if(yes != 1){setTimeout(show, 1000);}
             else{ loadDiv.style.display='none';yes = 0;return ;}        
         }
+    
+    function show1(){
+        loadDiv.style.display='block';
+     }
 </script>
 
 

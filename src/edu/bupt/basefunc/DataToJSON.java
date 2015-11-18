@@ -23,11 +23,11 @@ public class DataToJSON {
 	 * @throws SQLException 
 	 */
 	public static String friendExpandJSON(ResultSet rsUserName ,ResultSet rsRelation) throws SQLException{
-		String result = null;
+		String result = "0";
 		StringBuilder nodeBuilder = new StringBuilder();
 		StringBuilder linkBuilder = new StringBuilder();
 		
-		if(null ==rsUserName || null == rsRelation) return "{\"result\":\"0\"}";
+		if(null ==rsUserName || null == rsRelation) return "0";
 		ResultSetMetaData rsUserNameMetaData = rsUserName.getMetaData();
 		rsUserName.next();
 		String userName = rsUserName.getString(rsUserNameMetaData.getColumnLabel(1));  //获取用户昵称
@@ -37,35 +37,26 @@ public class DataToJSON {
 			String targetName = rsRelation.getString(rsRelationMetaData.getColumnLabel(2));  //获取@用户昵称
 			String totalNumber = rsRelation.getString(rsRelationMetaData.getColumnLabel(4)); //获取@用户数量
 			nodeBuilder.append("{\"category\":\"3\",\"name\":\""+targetName+"\",\"value\":\""+totalNumber+"\"},");
-			linkBuilder.append("{\"source\":\""+userName+"\",\"target\":\""+targetName+"\",\"weight\":\""+totalNumber+"\"},");
+//			linkBuilder.append("{\"source\":\""+userName+"\",\"target\":\""+targetName+"\",\"weight\":\""+totalNumber+"\"},");
+			linkBuilder.append("{\"source\":\""+userName+"\",\"target\":\""+targetName+"\",\"weight\":\""+totalNumber+"\",\"name\":\""+totalNumber+"次\",\"itemStyle\":{\"normal\":{\"width\":"+totalNumber+"}}},");
 		}
 		String nodeStr = nodeBuilder.toString();
 		String linkStr = linkBuilder.toString();
-		result = "{\"nodes\":["+nodeStr.substring(0, nodeStr.length()-1)+"],\"links\":["+linkStr.substring(0, linkStr.length()-1)+"]}";
+		if(!nodeStr.equals("") && !linkStr.equals("")){
+			result = "{\"nodes\":["+nodeStr.substring(0, nodeStr.length()-1)+"],\"links\":["+linkStr.substring(0, linkStr.length()-1)+"]}";
+		}		
 		return result;
 	}
 	
 	public static void main(String[] args) throws SQLException {
-		String userID = "1";
+		String userID = "1152369551";
 		Connection conn = SQLHelper.getConnection();
 		ResultSet rs1 = SelectOperation.selectAtuser(userID,"5",conn);
 		ResultSet rs2 = SelectOperation.selectAlias(userID, conn);
-		if(!rs1.next() || null == rs1 || !rs2.next() || null == rs2)System.out.println("ddd");
-	
-		else{
-			System.out.println(friendExpandJSON(rs2, rs1));
-		}
+
+		System.out.println(friendExpandJSON(rs2, rs1));
+
 		conn.close();
-		
-		
-//		while(rs1.next()){
-//			System.out.println(rs1.getString("atuser"));
-//		}	
-//		while(rs2.next()){
-//			System.out.println(rs2.getString("userAlias"));
-//		}
-		
-		
 	}
 
 }

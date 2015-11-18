@@ -27,7 +27,7 @@
 	userInfoCateMap = basicFun.cateMapBuild(cateList,cateChineseList);
 	session.setAttribute("userID", userID);
 	ResultSet rs1 = null;
-	HashMap<String,ArrayList<HashMap<String,String>>> realationMap = null;
+	HashMap<String,ArrayList<HashMap<String,String>>> realationMap = null;  //某用户关系的所有@用户及相应at总数(totalNumber)
 	HashMap<String,String>  userMap = null;   //用户昵称与相应at总数(totalNumber)
 	HashMap<String,Integer> userCate = null;  //用户颜色节点等级
 	HashMap<String,HashMap<String,String>>  usrInfoMap  = null;
@@ -85,7 +85,7 @@
 					UpdateOperation.updateEndState("contentstate");
 				}
 				basicFun.expandRelationMap(realationMap, mainUser, name1, number);
-				ResultSet rsinfotemp = SelectOperation.selectUserinfo(atuserID, conn);				
+				ResultSet rsinfotemp = SelectOperation.selectUserinfo(atuserID, conn);  //获取用户的基本信息				
 				basicFun.expandInfoMap(usrInfoMap, cateList, name1, rsinfotemp);			
 				ResultSet rsTemp = SelectOperation.selectAtuser(atuserID,"5",conn);
 				if(rsTemp!=null){
@@ -118,9 +118,10 @@
 		}
 		
 			String idFinalString = idFinalArray.toString();
-		    idFinalString = idFinalString.replaceAll("\\s","");
-			/* System.out.println("********"+idFinalString);
- 			ExecuteShell.executeShell(idFinalString,"userinfo_list"); //爬取用户第三层关系
+		   idFinalString = idFinalString.replaceAll("\\s","");
+		    
+			System.out.println("********"+idFinalString);
+ 			/*ExecuteShell.executeShell(idFinalString,"userinfo_list"); //爬取用户第三层关系
 			while(true){
 				int userinfostate = SelectOperation.selectEndState("userinfostate",conn);
 				if(userinfostate==1) break;			
@@ -223,7 +224,7 @@
     		<div id="menuuu" onMouseLeave ="this.style.display = 'none';">
 				<ul><!--右键弹出菜单-->		
 					<li id="menu_blood"  onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
-						<img src="../images/menu_blood.png" /><font>人物关系分析</font>
+						<img src="../images/menu_blood.png" /><font>关系分析</font>
 					</li>
 					<li id="menu_influence" onClick="alert('影响分析');" onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
 						<img src="../images/menu_influence.png" /><font>影响分析</font>
@@ -357,7 +358,7 @@
 														String number = userMap.get(name);
 														//out.print("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 														out.print("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
-														System.out.println("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
+														//System.out.println("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 													}
 											}else{System.out.println("No users!!!");}
                 			                %>
@@ -374,7 +375,7 @@
 	                			                	 for(HashMap<String,String>  maptemp : list){
 	                			                		String name = maptemp.keySet().iterator().next();
 	                			                	 	//out.print("{source:'"+name+"',target:'"+key+"',weight:"+maptemp.get(name)+",name:'"+maptemp.get(name)+"次'},");	
-	                			                	 	out.print("{source:'"+name+"',target:'"+key+"',weight:"+maptemp.get(name)+",name:'"+maptemp.get(name)+"次'"+",itemStyle:{normal:{width:"+maptemp.get(name)+"}}"+"},");	
+	                			                	 	out.print("{source:'"+name+"',target:'"+key+"',weight:"+maptemp.get(name)+",name:'"+maptemp.get(name)+"次'"+",itemStyle:{normal:{width:"+maptemp.get(name)+"}}},");	
 	                			                	 	//System.out.println("{source:"+name+",target: '"+key+"',weight :"+userMap.get(name)+"},");
 	                			                	 }
 	                			                 }
@@ -453,7 +454,6 @@
                     	var info = '<%=usrInfoMap%>';
                     	var uidlist = '<%=usrInfoMap.keySet()%>';
 						//option.series[0].nodes.push({category:2,name: 'dsb',value :1});
-						console.log("123");
 						console.log(option.series[0].nodes);
                     }
                 }
@@ -481,12 +481,17 @@
         				var data = {'uid':uid};
         				//异步从后台请求数据，绘制右键单击扩展人物关系
         					$.ajax({
-        						async:false,
+        						async:true,
         						url:"/weiboanalysis/interface/friendcircle_expand.jsp?",
         						type:'GET',
         						dataType:'text',
         						data:data,
         						success:function(text){
+        							
+        						    //alert(text);
+        							if(text == "0"){
+        								alert("该用户暂无@好友信息");
+        							}
         							//alert("We Get data:"+text);
         							var JsonString = text;
         							var JsonObj = JSON.parse(JsonString);
@@ -509,6 +514,9 @@
         								}        								
         								//console.log("*******"+"source: "+cur_link["source"]+"target: "+cur_link["target"]);
         								myChart.setOption(option);  
+        								console.log("999999999999999999999999");
+        								console.log(option.series[0].links);
+        								console.log("99999999999999999");
         								/* console.log("{{{{{{{");
         								console.log(option.series[0].links);
         								console.log("}}}}}}"); */

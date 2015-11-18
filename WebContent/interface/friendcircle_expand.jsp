@@ -9,7 +9,7 @@ String userID = request.getParameter("uid");
 ResultSet rsRelation = null;  //用户关系查询数据结果集
 ResultSet rsUserName = null;  //用户昵称查询数据结果集
 if(null == userID){
-	out.write("{\"result\":\"0\"}");
+	out.write("0");
 	return;
 }
 if(!SelectOperation.containsField("userID", userID, "t_user_weibocontent_atuser", conn)){
@@ -23,8 +23,7 @@ if(!SelectOperation.containsField("userID", userID, "t_user_weibocontent_atuser"
 try{
 	rsRelation = SelectOperation.selectAtuser(userID,"5",conn);  
 	rsUserName = SelectOperation.selectAlias(userID, conn);
-	if(!rsRelation.next() || null == rsRelation || !rsUserName.next() || null == rsUserName) out.write("{\"result\":\"0\"}");
-	else out.write(DataToJSON.friendExpandJSON(rsUserName, rsRelation)); 
+	out.write(DataToJSON.friendExpandJSON(rsUserName, rsRelation)); 
 	rsRelation.close();
 	rsUserName.close();
 }catch(Exception e){
