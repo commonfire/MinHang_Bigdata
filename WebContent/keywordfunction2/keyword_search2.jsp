@@ -89,9 +89,9 @@
 					<td><%=rs.getRow()%></td>
 					<td><%=keyword%></td>
 					<td><%=rs.getString("userAlias")!=null?rs.getString("userAlias"):""%></td> 
-				    <td><a href=<%="keyword_weibo.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询" onClick="show1()"></a></td>  
-				    <td><a href=<%="keyword_userinfo.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询"  onClick="show1()"></a></td>  
-				    <td><a href=<%="../friendcircle/atuser_circle_full.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询"  onClick="show1()"></a></td>  
+				    <td><a href=<%="keyword_weibo2.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询" onClick="show1()"></a></td>  
+				    <td><a href=<%="keyword_userinfo2.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询"  onClick="show1()"></a></td>  
+				    <td><a href=<%="../friendcircle2/atuser_circle_full2.jsp?uid="+rs.getString("userID")+"&alias="+rs.getString("userAlias")%>><input name="cmdQuery" type="button" class="btn_2k3" value="查询"  onClick="show1()"></a></td>  
 				</tr>
 				<%
 							}

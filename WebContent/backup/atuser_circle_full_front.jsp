@@ -5,12 +5,11 @@
 <%@ page import="org.json.JSONArray"%>
 <%@ page import="org.json.JSONObject"%>
 <%@ page import="org.json.JSONException"%>
-<%@ page import="edu.bupt.basefunc.basicFun" %>
+<%@ page import="edu.bupt.basefunc.basicFun" %>>
 <%@ page import="edu.bupt.display.AtuserCircle"%>
 <%@ page import="edu.bupt.display.ExecuteShell"%>
 <%@ page import="edu.bupt.jdbc.UpdateOperation"%>
 <%@ page import="edu.bupt.jdbc.SelectOperation"%>
-<%@ page import="edu.bupt.jdbc.SQLHelper"%>
 <%@ include file="../inc/conn.jsp"%> 
 <%
 	String userID = request.getParameter("uid")!=null?request.getParameter("uid"):"";
@@ -26,7 +25,7 @@
 	String[] cateChineseList=cateChinese.split(",");
 	HashMap<String,String> userInfoCateMap = new HashMap<String,String>();
 	userInfoCateMap = basicFun.cateMapBuild(cateList,cateChineseList);
-	//session.setAttribute("userID", userID);
+	session.setAttribute("userID", userID);
 	ResultSet rs1 = null;
 	HashMap<String,ArrayList<HashMap<String,String>>> realationMap = null;  //某用户关系的所有@用户及相应at总数(totalNumber)
 	HashMap<String,String>  userMap = null;   //用户昵称与相应at总数(totalNumber)
@@ -55,9 +54,6 @@
 			}
 			UpdateOperation.updateEndState("contentstate");
 		}
-		
-		//用户没有@用户，则插入“NullUser”
-		if(SelectOperation.checkNullAtuser(userID, conn)) SQLHelper.executeUpdate("insert into t_user_weibocontent_atuser(userID,atuser) values(?,'NullUser') ", new String[]{userID});
 
 		rs1 = SelectOperation.selectAtuser(userID,"5",conn);  //从数据库中获取用户第二层关系
 
@@ -125,8 +121,7 @@
 			String idFinalString = idFinalArray.toString();
 		   idFinalString = idFinalString.replaceAll("\\s","");
 		    
-			//System.out.println("********"+idFinalString);
-			
+			System.out.println("********"+idFinalString);
  			/*ExecuteShell.executeShell(idFinalString,"userinfo_list"); //爬取用户第三层关系
 			while(true){
 				int userinfostate = SelectOperation.selectEndState("userinfostate",conn);
@@ -148,7 +143,6 @@
 		 id_name_Object = basicFun.MapToJSONObj(id_name_map);
 		// System.out.println(usrInfoMap);
 		
-	}else{
 	}
 %>    
 <html>
@@ -157,7 +151,7 @@
 <link rel="stylesheet" href="../css/inputstyle.css" type="text/css"/>
 <link rel="stylesheet" href="../css/table_basic.css" type="text/css"/>
 <link rel="stylesheet" href="../css/jquery.webui-popover.min.css" type="text/css"/>
-<link href="../css/bootstrap.min.css" rel="stylesheet"/>
+<link href="../css/bootstrap.min.css" rel="stylesheet">
 <script type="text/javascript" src="../js/json2.js"></script>
 <script type="text/javascript" src="../js/zfunc.js"></script>
 <script src="../jquery-2.0.3/jquery-2.0.3.min.js"></script>
@@ -166,12 +160,14 @@
 
 	<style type="text/css" media="screen">
 		#loadDiv {
-		position:absolute;
+		position:static;
 		z-index:999;
 		width:expression(document.body.clientWidth);
 		height:expression(document.body.clientHeight);
+		background-color:#FFFFFF;
 		width:100%;
-		top:700px;
+		height:100%;
+		top:500px;
 		}
 		.loadDiv-fix{width: 250px;height: 80px; line-height: 80px; position: absolute; left: 50%; margin-left: -125px; top: 50%; margin-top: -50px; background: rgba(0,0,0,0); border-radius: 6px; color: #fff; padding-left: 110px; box-sizing:border-box; font-size: 1.6rem;}
 		.loadDiv-fix .load{width: 30px; height: 30px; display: block; position: absolute; left: 70px; top: 25px; -webkit-animation:myfirst 1.5s linear infinite ;}  
@@ -235,7 +231,7 @@
     		<td height="50"><div align="center" class="tableTitle"><%=mainUser%>用户微博人物关系分析</div></td>
 		</tr>
     	<tr><td>
-    		微博账号：<input type="text" name="uid" value="<%=userID%>">
+    		微博账号：<input type="text" name="uid" value=<%=session.getAttribute("userID") %>>
     		<input type="button" name="cmdQuery" class="btn_2k3" value="查询" onClick="atuserSearch();">
     	</td></tr>
     	<tr><td>
@@ -254,30 +250,29 @@
    		
     		
     	</td></tr>
-    	 <div id="loadDiv" style="display:none;">
+	</table>
+	</form>
+	<!-- 爬取信息提示 -->
+ <div id="loadDiv">
         <div class="loadDiv-fix">
             <img class="load" src="../images/crawler_load.gif" />
             <div align="center"><font size='3' color='black' >正在爬取中....</font></div>
         </div>
-      </div>
-	</table>
-	</form>
-
+</div>
 </body>
 
 <script language="javascript">
-		var loadDiv = document.getElementById('loadDiv');
-
 		function atuserSearch(){
-			document.myForm.action="atuser_circle_full.jsp";
+			document.myForm.action="";
 			document.myForm.submit();
 		}
+		
 </script>
+
+
 
 <script src="../echarts-test/echarts-2.2.7/build/source/echarts.js"></script>
 <script type="text/javascript">
-		
-//the script about scrawl_sign show  
 
 		
         // 路径配置
@@ -382,14 +377,11 @@
 //                  			                }
 											if(userMap!=null){
 													Set<String> nameset = userMap.keySet();
-													for(String name : nameset){													
-														if(name !=null){
+													for(String name : nameset){
 														String number = userMap.get(name);
 														//out.print("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 														out.print("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 														//System.out.println("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
-														}
-														else{System.out.println("No this user name");}
 													}
 											}else{System.out.println("No users!!!");}
                 			                %>
@@ -417,9 +409,13 @@
                 			    ]
 
                 };
-                
-                
-                var willShow; //右键点击待查询的用户昵称
+                //the script about scrawl_sign show  
+                var is_show_scrawl_sign = 1;
+                var loadDiv = document.getElementById('loadDiv');
+                loadDiv.style.display='block';
+                console.log(loadDiv.style.display);
+               //
+                var willShow;
                 myChart.setOption(option); // 为echarts对象加载数据
                 var ecConfig = require('echarts/config');
                 var jsonObj = <%=jsonObjAll%>           

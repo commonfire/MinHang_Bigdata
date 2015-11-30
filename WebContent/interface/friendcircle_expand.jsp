@@ -1,17 +1,25 @@
-<%@page import="edu.bupt.basefunc.DataToJSON"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="edu.bupt.basefunc.DataToJSON"%>
+<%@ page import="java.net.URLDecoder"%>
 <%@ page import="edu.bupt.display.ExecuteShell"%>
 <%@ page import="edu.bupt.jdbc.UpdateOperation"%>
 <%@ page import="edu.bupt.jdbc.SelectOperation"%>
 <%@ include file="../inc/conn.jsp"%> 
 <%
-String userID = request.getParameter("uid");
+String alias = request.getParameter("alias");
+alias = URLDecoder.decode(alias,"UTF-8");
+alias = URLDecoder.decode(alias,"UTF-8");
+System.out.println("!!!!"+alias);
+
 ResultSet rsRelation = null;  //用户关系查询数据结果集
 ResultSet rsUserName = null;  //用户昵称查询数据结果集
-if(null == userID){
+if(null == alias){
 	out.write("0");
 	return;
 }
+String userID = SelectOperation.selectAtUserid(alias, conn);
+System.out.println(userID);
+
 if(!SelectOperation.containsField("userID", userID, "t_user_weibocontent_atuser", conn)){
 	ExecuteShell.executeShell(userID,"weibocontent_userinfo");	//右键动态扩展，爬取用户关系
 	while(true){
@@ -28,7 +36,7 @@ try{
 	rsUserName.close();
 }catch(Exception e){
 	e.printStackTrace();	
-}
+}  
 
 
 

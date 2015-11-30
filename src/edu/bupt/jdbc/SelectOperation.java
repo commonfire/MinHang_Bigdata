@@ -21,6 +21,24 @@ public class SelectOperation {
 		return rs;
 	}
 	
+	public static String selectAtUserid(String userAlias,Connection conn){
+		String[] parameters = new String[]{userAlias};
+		ResultSet rs = null;
+		String res = null;
+		try {
+			rs = SQLHelper.executeQuery("select atuserID from t_user_weibocontent_atuser where atuser = ? and rownum = 1", parameters, conn);
+			if(null != rs){
+				rs.next();
+				res = rs.getString("atuserID");
+			}
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
+	
 	public static ResultSet selectAlias(String userID,Connection conn){
 		String[] parameters = new String[]{userID};
 		ResultSet rs = null;
@@ -33,6 +51,7 @@ public class SelectOperation {
 		}
 		return rs;
 	}
+	
 	
 	public static ResultSet selectUid(Connection conn){
 		ResultSet rs = null;
@@ -78,7 +97,7 @@ public class SelectOperation {
 		ResultSet rs = null;
 		String[] parameters = new String[]{userID,topN};
 		try {
-			String sql = "select * from (select userID,atuser,atuserID,count(*) as totalNumber from t_user_weibocontent_atuser where userID=? group by atuserID,userID,atuser order by totalNumber desc) where rownum<=?";
+			String sql = "select * from (select userID,atuser,atuserID,count(*) as totalNumber from t_user_weibocontent_atuser where userID=? and atuser != 'NullUser' group by atuserID,userID,atuser order by totalNumber desc) where rownum<=?";
 			rs = SQLHelper.executeQuery(sql, parameters, conn);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -191,14 +210,33 @@ public class SelectOperation {
 		}
 		return result;
 	}
+	
+	//判断指定uid用户是否有atuser
+	public static boolean checkNullAtuser(String uid,Connection conn){
+		boolean result = false;
+		String[] parameters = new String[]{uid};
+		ResultSet rs = null;
+		try {
+			rs = SQLHelper.executeQuery("select * from t_user_weibocontent_atuser where userID= ?", parameters, conn);
+			if(!rs.next()){
+				result = true;
+			} 
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return result;
+	}
 
 
 	
 	public static void main(String[] args) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
-//		Connection conn = SQLHelper.getConnection();
-//    	System.out.println(SelectOperation.containsField("keyword","翟金顺","t_user_keyword", conn));
-//		conn.close();
-
+		/*Connection conn = SQLHelper.getConnection();
+	   System.out.println(checkNullAtuser("22222", conn));
+	   //SQLHelper.executeUpdate("insert into t_user_weibocontent_atuser(userID,atuser) values(?,'NullUser') ", new String[]{"22222"});
+	   if(SelectOperation.containsField("userID", "22222", "t_user_weibocontent_atuser", conn)){
+		   System.out.println("contains!!");
+	   }
+		conn.close();*/
 	}
 
 }
