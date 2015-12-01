@@ -16,7 +16,9 @@ public class basicFun {
 		JSONObject jsonObj = new JSONObject();
 		Set<String> keys = map.keySet();	
 		for(String key : keys){
-			jsonObj.put(key,map.get(key));
+			if(key != null){
+				jsonObj.put(key,map.get(key));
+			}
 		}
 		return jsonObj;
 	}

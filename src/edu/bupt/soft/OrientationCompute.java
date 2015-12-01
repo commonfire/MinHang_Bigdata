@@ -22,9 +22,9 @@ public class OrientationCompute {
 	
 	 private static final double BETA = 0.5;                      //算法2的加权系数BETA>=0
     private static final int BASEWORD_COUNT = 40;                //褒/贬基准词表词数
-    private static ArrayList<SentimentWordItem> sentimentWords;   //情感词库词语
-    private static ArrayList<BaseWordItem> positiveWords;         //基准褒义词词语
-    private static ArrayList<BaseWordItem> negativeWords;         //基准贬义词词语
+    public static ArrayList<SentimentWordItem> sentimentWords;   //情感词库词语
+    public static ArrayList<BaseWordItem> positiveWords;         //基准褒义词词语
+    public static ArrayList<BaseWordItem> negativeWords;         //基准贬义词词语
     private static HashMap<String, Float> emoticons;              //表情基准词库
     
     //加载词库，只需要一次

@@ -166,15 +166,6 @@ myChart.setOption(option); // 为echarts对象加载数据
 	}
 );
 </script>
-
-<script language="javascript">
-		function atuserSearch(){
-			document.myForm.action="";
-			document.myForm.submit();
-		}
-		
-</script>
-
 </head>
 
 <body>
@@ -184,8 +175,8 @@ myChart.setOption(option); // 为echarts对象加载数据
     	<td height="50"><div align="center" class="tableTitle">微博账号人物关系分析</div></td>
     </tr>
     <tr><td>
-    请输入微博账号：<input type="text" name="userid" value="">
-    <input type="button" name="cmdQuery" class="btn_2k3" value="查询" onclick="">
+    微博账号：<input type="text" name="weiboid" value="">
+    <input name="cmdQuery" type="button" class="btn_2k3" value="查询">
     </td></tr>
     <tr><td>
     <div id="main" style="height:400px"></div>

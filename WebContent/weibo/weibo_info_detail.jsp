@@ -36,9 +36,9 @@
 		<th scope="col">非情感词分数</th>
 		<th scope="col">句子舆情等级</th>
 	</tr>
-    <%! static  ArrayList<SentimentWordItem> sentimentWords = new OrientationCompute().sentimentWords;
-        static  ArrayList<BaseWordItem> positiveWords = new OrientationCompute().positiveWords;
-        static  ArrayList<BaseWordItem> negativeWords = new OrientationCompute().negativeWords;
+    <%! static  ArrayList<SentimentWordItem> sentimentWords = OrientationCompute.sentimentWords;
+        static  ArrayList<BaseWordItem> positiveWords = OrientationCompute.positiveWords;
+        static  ArrayList<BaseWordItem> negativeWords = OrientationCompute.negativeWords;
     %>
 	<%
 		String weiboID=request.getParameter("id");
