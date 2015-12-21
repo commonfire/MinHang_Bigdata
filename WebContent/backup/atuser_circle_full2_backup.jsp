@@ -5,7 +5,7 @@
 <%@ page import="org.json.JSONArray"%>
 <%@ page import="org.json.JSONObject"%>
 <%@ page import="org.json.JSONException"%>
-<%@ page import="edu.bupt.basefunc.basicFun" %>>
+<%@ page import="edu.bupt.basefunc.basicFun" %>
 <%@ page import="edu.bupt.display.AtuserCircle"%>
 <%@ page import="edu.bupt.display.ExecuteShell"%>
 <%@ page import="edu.bupt.jdbc.UpdateOperation"%>
@@ -25,7 +25,7 @@
 	String[] cateChineseList=cateChinese.split(",");
 	HashMap<String,String> userInfoCateMap = new HashMap<String,String>();
 	userInfoCateMap = basicFun.cateMapBuild(cateList,cateChineseList);
-	session.setAttribute("userID", userID);
+	//session.setAttribute("userID", userID);
 	ResultSet rs1 = null;
 	HashMap<String,ArrayList<HashMap<String,String>>> realationMap = null;  //某用户关系的所有@用户及相应at总数(totalNumber)
 	HashMap<String,String>  userMap = null;   //用户昵称与相应at总数(totalNumber)
@@ -40,19 +40,18 @@
 		//如果主用户信息没有爬取，则爬取主用户信息
 		if(mainUser.equals("")){
 			ResultSet rs = SelectOperation.selectAlias(userID, conn);
-			if(rs!=null){
-				rs.next();
+			if(rs.next()){
 				mainUser = rs.getString("userAlias");
 			}
+			else mainUser = userID;
 		}
-
+		
 		ExecuteShell.executeShell(userID,"weibocontent_userinfo");	//爬取用户第一层关系
 		while(true){
 				int searchstate = SelectOperation.selectEndState("contentstate",conn);
 				if(searchstate==1) break;	
 		}
 		UpdateOperation.updateEndState("contentstate");
-
 
 		rs1 = SelectOperation.selectAtuser(userID,"5",conn);  //从数据库中获取用户第二层关系
 
@@ -74,7 +73,7 @@
 					userMap.put(name1,number);
 				}					
 					
-				//System.out.println(rs1.getString("atuserID")+":"+rs1.getString("atuser"));
+				System.out.println(rs1.getString("atuserID")+":"+rs1.getString("atuser"));
 				ExecuteShell.executeShell(rs1.getString("atuserID"),"weibocontent_userinfo"); //爬取用户第二层关系
 				while(true){
 					int contentstate = SelectOperation.selectEndState("contentstate",conn);
@@ -118,7 +117,8 @@
 			String idFinalString = idFinalArray.toString();
 		   idFinalString = idFinalString.replaceAll("\\s","");
 		    
-			System.out.println("********"+idFinalString);
+			//System.out.println("********"+idFinalString);
+			
  			/*ExecuteShell.executeShell(idFinalString,"userinfo_list"); //爬取用户第三层关系
 			while(true){
 				int userinfostate = SelectOperation.selectEndState("userinfostate",conn);
@@ -140,6 +140,7 @@
 		 id_name_Object = basicFun.MapToJSONObj(id_name_map);
 		// System.out.println(usrInfoMap);
 		
+	}else{
 	}
 %>    
 <html>
@@ -148,13 +149,26 @@
 <link rel="stylesheet" href="../css/inputstyle.css" type="text/css"/>
 <link rel="stylesheet" href="../css/table_basic.css" type="text/css"/>
 <link rel="stylesheet" href="../css/jquery.webui-popover.min.css" type="text/css"/>
-<link href="../css/bootstrap.min.css" rel="stylesheet">
+<link href="../css/bootstrap.min.css" rel="stylesheet"/>
 <script type="text/javascript" src="../js/json2.js"></script>
 <script type="text/javascript" src="../js/zfunc.js"></script>
 <script src="../jquery-2.0.3/jquery-2.0.3.min.js"></script>
 <script src="../jquery-2.0.3/jquery-2.0.3.js"></script>
 <title>用户微博人物关系分析</title>
 
+	<style type="text/css" media="screen">
+		#loadDiv {
+		position:absolute;
+		z-index:999;
+		width:expression(document.body.clientWidth);
+		height:expression(document.body.clientHeight);
+		width:100%;
+		top:700px;
+		}
+		.loadDiv-fix{width: 250px;height: 80px; line-height: 80px; position: absolute; left: 50%; margin-left: -125px; top: 50%; margin-top: -50px; background: rgba(0,0,0,0); border-radius: 6px; color: #fff; padding-left: 110px; box-sizing:border-box; font-size: 1.6rem;}
+		.loadDiv-fix .load{width: 30px; height: 30px; display: block; position: absolute; left: 70px; top: 25px; -webkit-animation:myfirst 1.5s linear infinite ;}  
+		.loadDiv-fix .loading{width: 80px; height: 80px; display: block; position: absolute; left: 10px; top: 0px;-webkit-animation:mysec 2s linear infinite ;}  
+	</style>
 	<style>
 		#menuuu{
 			position:absolute;
@@ -213,11 +227,11 @@
     		<td height="50"><div align="center" class="tableTitle"><%=mainUser%>用户微博人物关系分析</div></td>
 		</tr>
     	<tr><td>
-    		微博账号：<input type="text" name="uid" value=<%=session.getAttribute("userID") %>>
+    		微博账号：<input type="text" name="uid" value="<%=userID%>">
     		<input type="button" name="cmdQuery" class="btn_2k3" value="查询" onClick="atuserSearch();">
     	</td></tr>
     	<tr><td>
-    		<div id="main" style="height:500px"></div>
+    		<div id="main" style="height:500px ;z-index:1"></div>
     		
     		<div id="menuuu" onMouseLeave ="this.style.display = 'none';">
 				<ul><!--右键弹出菜单-->		
@@ -232,22 +246,30 @@
    		
     		
     	</td></tr>
+    	 <div id="loadDiv" style="display:none;">
+        <div class="loadDiv-fix">
+            <img class="load" src="../images/crawler_load.gif" />
+            <div align="center"><font size='3' color='black' >正在爬取中....</font></div>
+        </div>
+      </div>
 	</table>
 	</form>
+
 </body>
 
 <script language="javascript">
+		var loadDiv = document.getElementById('loadDiv');
+
 		function atuserSearch(){
-			document.myForm.action="";
+			document.myForm.action="atuser_circle_full2.jsp";
 			document.myForm.submit();
 		}
-		
 </script>
-
-
 
 <script src="../echarts-test/echarts-2.2.7/build/source/echarts.js"></script>
 <script type="text/javascript">
+		
+//the script about scrawl_sign show  
 
 		
         // 路径配置
@@ -352,13 +374,16 @@
 //                  			                }
 											if(userMap!=null){
 													Set<String> nameset = userMap.keySet();
-													for(String name : nameset){
+													for(String name : nameset){													
+														if(name !=null){
 														String number = userMap.get(name);
 														//out.print("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 														out.print("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 														//System.out.println("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
+														}
+														else{System.out.println("No this user name");}
 													}
-											}else{System.out.println("No users!!!");}
+											}else{System.out.println("No Users!!!");}
                 			                %>
                 			            ],
                 			            links : [
@@ -377,7 +402,7 @@
 	                			                	 	//System.out.println("{source:"+name+",target: '"+key+"',weight :"+userMap.get(name)+"},");
 	                			                	 }
 	                			                 }
-											}//else{System.out.println("No Users!!!");}
+											}else{System.out.println("No Users!!!");}
                 			                 %>                			                                 			                
                 			            ]
                 			        }
@@ -385,7 +410,8 @@
 
                 };
                 
-                var willShow;
+                
+                var willShow; //右键点击待查询的用户昵称
                 myChart.setOption(option); // 为echarts对象加载数据
                 var ecConfig = require('echarts/config');
                 var jsonObj = <%=jsonObjAll%>           
@@ -473,10 +499,20 @@
                 
                $(function(){
         			$("#menu_blood").click(function(param){
-        				console.log(param);
-        				var uid = jsonObj[willShow]['USERID'];
-        				console.log("((()))"+uid);
-        				var data = {'uid':uid};
+        				
+        				loadDiv.style.display='block';
+        				console.log(loadDiv.style.display);
+        				var alias = encodeURI(willShow);
+        				alias = encodeURI(alias);
+        			//	alert(a)
+        				/* console.log(param);
+        				console.log(jsonObj)
+        				console.log("*******"+willShow)
+        				var uid = jsonObj[willShow]['USERID']; */
+        				
+        				//console.log("((()))"+uid);
+        				//var data = {'uid':uid};
+        				var data = {'alias':alias}
         				//异步从后台请求数据，绘制右键单击扩展人物关系
         					$.ajax({
         						async:true,
@@ -485,38 +521,40 @@
         						dataType:'text',
         						data:data,
         						success:function(text){
-        							
-        						    //alert(text);
-        							if(text == "0"){
+        							loadDiv.style.display='none';
+       							 //console.log(loadDiv.style.display);
+        							if(trim(text)=="0"){
         								alert("该用户暂无@好友信息");
         							}
-        							//alert("We Get data:"+text);
-        							var JsonString = text;
-        							var JsonObj = JSON.parse(JsonString);
-        							var JsonNodeObj = JsonObj['nodes'];
-        							var JsonLinkObj = JsonObj['links'];        							
-        							for(var i=0;i<JsonNodeObj.length;i++){
-        								var cur_node = JsonNodeObj[i];
-      									var isExist = option.series[0].nodes.indexOf(cur_node,0);
-      									if(isExist != -1) continue;
-        								option.series[0].nodes.push(cur_node);
-        								myChart.setOption(option);  
-        							/* 	console.log("{{{{{{{");
-        								console.log(option.series[0].nodes);
-        								console.log("}}}}}}"); */
-        							}
-        							for(var i=0;i<JsonLinkObj.length;i++){
-        								var cur_link = JsonLinkObj[i];     
-        								if(contains_reverse_link(option,cur_link) == false){
-        									option.series[0].links.push(cur_link);
-        								}        								
-        								//console.log("*******"+"source: "+cur_link["source"]+"target: "+cur_link["target"]);
-        								myChart.setOption(option);  
-        								/* console.log("{{{{{{{");
-        								console.log(option.series[0].links);
-        								console.log("}}}}}}"); */
-        							}
-        						},
+       							var JsonString = text;
+       							var JsonObj = JSON.parse(JsonString);
+       							if(JsonObj != null){
+	        							var JsonNodeObj = JsonObj['nodes'];
+	        							var JsonLinkObj = JsonObj['links'];
+	        							if(JsonNodeObj != null){
+	        								for(var i=0;i<JsonNodeObj.length;i++){
+	            								var cur_node = JsonNodeObj[i];
+	            								    //避免双向链接
+	          									var isExist = option.series[0].nodes.indexOf(cur_node,0);
+	          									if(isExist != -1) continue;
+	            								option.series[0].nodes.push(cur_node);
+	        								}
+	        								myChart.setOption(option);
+	        								
+	        								for(var i=0;i<JsonLinkObj.length;i++){
+	            								var cur_link = JsonLinkObj[i];     
+	            								if(contains_reverse_link(option,cur_link) == false){
+	            									option.series[0].links.push(cur_link);
+	            								}        								
+	            								//console.log("*******"+"source: "+cur_link["source"]+"target: "+cur_link["target"]);
+	            								myChart.setOption(option);          								
+	            								console.log(option.series[0].links);        								
+	            							}
+	        							}else{
+	        								console.log("no friends");
+	        							}
+       							}
+       						},
         						error:function(){
         							alert("不通");
         						}
@@ -526,13 +564,14 @@
                 function rightBt(param){
                 	var data = param.data;
                 	willShow = data.name;
-					var menu = document.getElementById("menuuu");
-					var event = param.event;
-					var pageX = event.pageX;
-					var pageY = event.pageY;
-					menu.style.left = pageX + 'px';
-					menu.style.top = pageY + 'px';
-					menu.style.display = "block";
+						console.log("(((((((((())))))))))"+id_name_Obj[willShow]);
+						var menu = document.getElementById("menuuu");
+						var event = param.event;
+						var pageX = event.pageX;
+						var pageY = event.pageY;
+						menu.style.left = pageX + 'px';
+						menu.style.top = pageY + 'px';
+						menu.style.display = "block";
 					
 				}
                 

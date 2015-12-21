@@ -9,7 +9,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Properties;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class SQLHelper {
     // 定义要使用的变量
@@ -154,7 +166,7 @@ public class SQLHelper {
     public static ResultSet executeQuery(String sql, String[] parameters,Connection conn) throws SQLException {      
         ResultSet rs = null;
         try {
-            ps = conn.prepareStatement(sql);
+            ps = conn.prepareStatement(sql,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
             if (parameters != null) {
                 for (int i = 0; i < parameters.length; i++) {
                     ps.setString(i + 1, parameters[i]);                  
@@ -280,9 +292,6 @@ public class SQLHelper {
         conn = null;
     }
     
-    public static void main(String[] args) throws SQLException{
-//    	 Connection conn = SQLHelper.getConnection();
-
-    	
+    public static void main(String[] args) throws SQLException{ 
     }
 }

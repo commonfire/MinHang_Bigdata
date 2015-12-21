@@ -17,20 +17,18 @@ public class DataToJSON {
 	
 	/**
 	 * 将数据库用户关系数据转换为JSON数据格式
-	 * @param rsUserName 用户昵称查询数据结果集
+	 * @param userAlias  用户昵称
 	 * @param rsRelation 用户关系查询数据结果集
 	 * @return   转换后的JSON格式数据用以处理右键扩展用户关系图谱
 	 * @throws SQLException 
 	 */
-	public static String friendExpandJSON(ResultSet rsUserName ,ResultSet rsRelation) throws SQLException{
+	public static String friendExpandJSON(String userAlias ,ResultSet rsRelation) throws SQLException{
 		String result = "0";
 		StringBuilder nodeBuilder = new StringBuilder();
 		StringBuilder linkBuilder = new StringBuilder();
 		
-		if(null ==rsUserName || null == rsRelation) return "0";
-		ResultSetMetaData rsUserNameMetaData = rsUserName.getMetaData();
-		rsUserName.next();
-		String userName = rsUserName.getString(rsUserNameMetaData.getColumnLabel(1));  //获取用户昵称
+		if(null == rsRelation || !rsRelation.next()) return "0";
+		rsRelation.beforeFirst();
 		
 		ResultSetMetaData rsRelationMetaData = rsRelation.getMetaData();
 		while(rsRelation.next()){
@@ -38,7 +36,7 @@ public class DataToJSON {
 			String totalNumber = rsRelation.getString(rsRelationMetaData.getColumnLabel(4)); //获取@用户数量
 			nodeBuilder.append("{\"category\":\"3\",\"name\":\""+targetName+"\",\"value\":\""+totalNumber+"\"},");
 //			linkBuilder.append("{\"source\":\""+userName+"\",\"target\":\""+targetName+"\",\"weight\":\""+totalNumber+"\"},");
-			linkBuilder.append("{\"source\":\""+userName+"\",\"target\":\""+targetName+"\",\"weight\":\""+totalNumber+"\",\"name\":\""+totalNumber+"次\",\"itemStyle\":{\"normal\":{\"width\":"+totalNumber+"}}},");
+			linkBuilder.append("{\"source\":\""+userAlias+"\",\"target\":\""+targetName+"\",\"weight\":\""+totalNumber+"\",\"name\":\""+totalNumber+"次\",\"itemStyle\":{\"normal\":{\"width\":"+totalNumber+"}}},");
 		}
 		String nodeStr = nodeBuilder.toString();
 		String linkStr = linkBuilder.toString();
@@ -49,14 +47,14 @@ public class DataToJSON {
 	}
 	
 	public static void main(String[] args) throws SQLException {
-		String userID = "1152369551";
+		/*String userID = "11";
 		Connection conn = SQLHelper.getConnection();
 		ResultSet rs1 = SelectOperation.selectAtuser(userID,"5",conn);
 		ResultSet rs2 = SelectOperation.selectAlias(userID, conn);
 
 		System.out.println(friendExpandJSON(rs2, rs1));
 
-		conn.close();
+		conn.close();*/
 	}
 
 }

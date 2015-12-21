@@ -71,7 +71,7 @@ result = ShowFormat.showFormat(score/count);
                 		    },
                 		    series : [
                 		        {
-                		            name:'<%="xxxxx"%>',
+                		            name:'<%=userAlias!=null?userAlias:""%>',
                 		            type:'gauge',
                 		            center : ['50%', '50%'],    // 默认全局居中
                 		            radius : [0, '85%'],

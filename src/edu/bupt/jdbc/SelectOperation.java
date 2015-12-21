@@ -1,10 +1,14 @@
 package edu.bupt.jdbc;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Scanner;
 
 
 public class SelectOperation {
@@ -93,11 +97,43 @@ public class SelectOperation {
 		return rs;
 	}
 	
+	/**
+	  * 获取@用户
+	 * @param userID            用户uid
+	 * @param currentTimeStamp  当前时间戳
+	 * @param topN              选取前topN名
+	 * @param inType            选择近一天/周/月
+	 * @param conn              数据库连接
+	 * @return                  数据库结果集
+	 */
+	public static ResultSet selectAtuser(String userID,String currentTimeStamp,String topN,String inType,Connection conn){
+		ResultSet rs = null;
+		String sql = null;
+		String inTime = null;
+		String[] parameters = new String[]{userID,currentTimeStamp,topN};
+		try {
+			if("day".equals(inType)){   //最近一天发表
+				inTime = "86400000";
+			}else if("week".equals(inType)){  //最近一周发表
+				inTime = "604800000";
+			}else{      //"month",最近一月发表
+				inTime = "2592000000"; //6-0
+			}
+			 sql = "select * from (select userID,atuser,atuserID,count(*) as totalNumber from t_user_weibocontent_atuser where userID=? and atuser != 'NullUser' and ? - publishTimeStamp < "+inTime+" group by atuserID,userID,atuser order by totalNumber desc) where rownum<=?";
+			rs = SQLHelper.executeQuery(sql, parameters, conn);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return rs;
+	}
+	
 	public static ResultSet selectAtuser(String userID,String topN,Connection conn){
 		ResultSet rs = null;
+		String sql = null;
 		String[] parameters = new String[]{userID,topN};
 		try {
-			String sql = "select * from (select userID,atuser,atuserID,count(*) as totalNumber from t_user_weibocontent_atuser where userID=? and atuser != 'NullUser' group by atuserID,userID,atuser order by totalNumber desc) where rownum<=?";
+			sql = "select * from (select userID,atuser,atuserID,count(*) as totalNumber from t_user_weibocontent_atuser where userID=? and atuser != 'NullUser' group by atuserID,userID,atuser order by totalNumber desc) where rownum<=?";
 			rs = SQLHelper.executeQuery(sql, parameters, conn);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -195,18 +231,45 @@ public class SelectOperation {
 		return result;
 	}
 	
+	//获取爬取某用户上一次爬取时间
+	public static long selectLastSearchTime(String uid, Connection conn){
+		long result = 0;
+		String[] parameters = new String[]{uid};
+		ResultSet rs = null;
+		try {
+			  rs = SQLHelper.executeQuery("select lastSearchTime from t_user_lastsearchtime where userID = ?",parameters, conn);
+			  if(rs.next()) result = rs.getLong("lastSearchTime");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+	
+	
 	//判断是否已经爬取，避免重复爬取
 	public static boolean containsField(String field,String value,String tableName,Connection conn){
 		String[] parameters = new String[]{value};
 		boolean result = false;
+		ResultSet rs = null;
 		try {
-			ResultSet rs = SQLHelper.executeQuery("select count(*) as count from "+tableName+" where "+field+" = ?", parameters, conn);
+			rs = SQLHelper.executeQuery("select count(*) as count from "+tableName+" where "+field+" = ?", parameters, conn);
 			rs.next();
 			int count = rs.getInt("count");
 			if(count!=0) result = true;
 			else result = false;
 		} catch (Exception e) {
-			// TODO: handle exception
+		}finally{
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		return result;
 	}
@@ -227,16 +290,43 @@ public class SelectOperation {
 		return result;
 	}
 
-
+	/**
+	 * 获取当前爬取微博最早时间戳
+	 * @param uid       用户uid
+	 * @param conn      数据库连接
+	 * @return          微博最早时间戳
+	 */
+	public static long getEarlistTimeStamp(String uid,Connection conn){
+		String[] parameters = new String[]{uid};
+		ResultSet rs = null;
+		long result = -155520000;
+		try {
+			rs = SQLHelper.executeQuery("select * from t_user_weibocontent where userID= ? order by publishTimeStamp", parameters, conn);
+			if(rs.next()){
+				result = Long.valueOf(rs.getString("publishTimeStamp"));
+			} 
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return result;
+	}
 	
 	public static void main(String[] args) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
-		/*Connection conn = SQLHelper.getConnection();
-	   System.out.println(checkNullAtuser("22222", conn));
+   	Connection conn = SQLHelper.getConnection();
+/*	   System.out.println(checkNullAtuser("22222", conn));
 	   //SQLHelper.executeUpdate("insert into t_user_weibocontent_atuser(userID,atuser) values(?,'NullUser') ", new String[]{"22222"});
 	   if(SelectOperation.containsField("userID", "22222", "t_user_weibocontent_atuser", conn)){
 		   System.out.println("contains!!");
 	   }
-		conn.close();*/
+		long currentTimeStamp = System.currentTimeMillis();
+		
+		ResultSet rs = SelectOperation.selectInWeek("3655612552", String.valueOf(currentTimeStamp),conn);
+		while(rs.next()){
+			Clob c = rs.getClob("content");
+			System.out.println(c.getSubString((long)1, (int)c.length()));
+		}*/
+		//System.out.println(selectLastSearchTime("333",conn));
+		conn.close();
 	}
 
 }
