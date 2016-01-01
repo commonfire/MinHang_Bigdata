@@ -44,16 +44,17 @@
 		String weiboID=request.getParameter("id");
 		String weiboContent="";
 		ResultSet rs= SelectOperation.selectContent(weiboID,conn);   //stmt.executeQuery("select content from t_user_weibo where id="+weiboID);       //从数据库中选取指定id的微博内容
-		if(rs!=null){
-			try{
-			if(rs.next()){
-			String blogContent = rs.getString("content");
-		    ArrayList<String> sentences = new SentenceProcessor().SplitToSentences(blogContent);    //获取指定微博的分句
-		    System.out.println(sentences);
-			for(int i = 0;i<=sentences.size()-1;i++){
-			if((i+1)%2!=0){
-				double sentiScore = WordCompute.calSentiWord(WordSegAnsj.getSentimentWord(WordSegAnsj.splitOriginal(sentences.get(i)), sentimentWords), sentimentWords);
-			    double nonSentiScore = WordCompute.calNonSentiWord(WordSegAnsj.getNonSentimentWord(WordSegAnsj.split(sentences.get(i)),sentimentWords), positiveWords, negativeWords, sentimentWords);
+		
+		try{
+		if(rs.next()){
+		Clob clob = rs.getClob("CONTENT");
+		String blogContent = null != clob ? clob.getSubString((long)1, (int)clob.length()) : "";
+	   ArrayList<String> sentences = new SentenceProcessor().SplitToSentences(blogContent);    //获取指定微博的分句
+	   System.out.println(sentences);
+		for(int i = 0;i<=sentences.size()-1;i++){
+		if((i+1)%2!=0){
+			double sentiScore = WordCompute.calSentiWord(WordSegAnsj.getSentimentWord(WordSegAnsj.splitOriginal(sentences.get(i)), sentimentWords), sentimentWords);
+		    double nonSentiScore = WordCompute.calNonSentiWord(WordSegAnsj.getNonSentimentWord(WordSegAnsj.split(sentences.get(i)),sentimentWords), positiveWords, negativeWords, sentimentWords);
 	%>
 	   <tr><!-- 奇数行 -->  
 		<td><%=i+1%></td>
@@ -69,7 +70,7 @@
 	    <%
 	    	}else{
 	    	    	double sentiScore = WordCompute.calSentiWord(WordSegAnsj.getSentimentWord(WordSegAnsj.splitOriginal(sentences.get(i)), sentimentWords), sentimentWords);
-	    		    double nonSentiScore = WordCompute.calNonSentiWord(WordSegAnsj.split(sentences.get(i)), positiveWords, negativeWords, sentimentWords);
+	    		   double nonSentiScore = WordCompute.calNonSentiWord(WordSegAnsj.split(sentences.get(i)), positiveWords, negativeWords, sentimentWords);
 	    %>
 	   <tr class="altrow"><!-- 偶数行 -->
 		<td><%=i+1%></td>
@@ -88,7 +89,7 @@
 		}catch(SQLException e){
        	 e.printStackTrace();
         }
-       } %>
+       %>
 </table>
 </td></tr>
 </table>

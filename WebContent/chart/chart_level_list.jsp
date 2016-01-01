@@ -23,11 +23,21 @@
 	double score = 0;
 	String blog = null;
 	if(!userID.equals("")){
-		ResultSet rs1 = SelectOperation.selectAlias(userID, conn);
-		if(rs1!=null){
-			rs1.next();
-			userAlias = rs1.getString("userAlias");
+		if(!SelectOperation.containsUser(userID, "USERID", conn)) {  //不重复爬取用户信息
+			ExecuteShell.executeShell(userID, "userinfo");
+					while (true) {
+						int userinfostate = SelectOperation.selectEndState("userinfostate", conn);
+						if (userinfostate == 1)
+							break;
+					}
 		}
+		ResultSet rs1 = SelectOperation.selectAlias(userID, conn);
+		if(rs1.next()){
+			userAlias = rs1.getString("userAlias");
+		}else{
+			userAlias = userID;
+		}
+		
 		if(!SelectOperation.containsField("userID", userID, "t_user_weibocontent", conn)) {
 			ExecuteShell.executeShell(userID,"keyweibocontent");
 			while(true){
@@ -39,7 +49,8 @@
 		ResultSet rs = SelectOperation.selectContent(userID, conn, count);
 		if(rs!=null){
 			while(rs.next()){
-				blog = rs.getString("content");			
+				Clob clob = rs.getClob("CONTENT");
+				blog = null != clob ? clob.getSubString((long)1, (int)clob.length()) : "";
 				//System.out.println(blog);				
 				score += new OrientationCompute().calcDSOofBlog2(blog);
 				//System.out.println("*********************"+score);

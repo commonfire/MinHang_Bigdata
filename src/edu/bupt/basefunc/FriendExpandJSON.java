@@ -10,10 +10,10 @@ import edu.bupt.jdbc.SelectOperation;
 
 /**
  * @author zjd
- * 数据格式JSON转换
+ *  人物节点扩展JSON数据
  *
  */
-public class DataToJSON {
+public class FriendExpandJSON {
 	
 	/**
 	 * 将数据库用户关系数据转换为JSON数据格式

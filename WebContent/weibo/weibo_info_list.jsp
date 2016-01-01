@@ -68,7 +68,8 @@ if(!userID.equals("")){
                 <td><div align="center">&nbsp;<%=rs.getString("userid").replace(userID,"<font color=red><b>"+userID+"</b></font>")%>&nbsp;</div></td>
                 <td><div align="left"><%=dt.isNull(rs.getString("content"))%>&nbsp;</div></td>
                 <td nowrap><div align="left"><%=rs.getString("PUBLISHTIME").replace(" ","<br>")%>&nbsp;</div></td>
-                <td nowrap><div align="center"><%=ShowFormat.showFormat(orientationcompute.calcDSOofBlog1(rs.getString("content")))%></div></td>
+                <%Clob clob = rs.getClob("CONTENT");%>
+                <td nowrap><div align="center"><%=ShowFormat.showFormat(orientationcompute.calcDSOofBlog1(null != clob ? clob.getSubString((long)1, (int)clob.length()) : ""))%></div></td>
                 <td><div align="center"><a href="weibo_info_detail.jsp?id=<%=dt.isNull(rs.getString("ID"))%>">详细</a></div></td>
             </tr>
             <%}%>

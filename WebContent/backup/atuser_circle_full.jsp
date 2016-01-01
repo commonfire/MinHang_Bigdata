@@ -1,3 +1,4 @@
+<%@page import="edu.bupt.basefunc.Filter"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.HashMap"%>  
 <%@ page import="java.util.Map.*"%>   
@@ -5,29 +6,33 @@
 <%@ page import="org.json.JSONArray"%>
 <%@ page import="org.json.JSONObject"%>
 <%@ page import="org.json.JSONException"%>
-<%@ page import="edu.bupt.basefunc.basicFun" %>>
+<%@ page import="edu.bupt.basefunc.*" %>
 <%@ page import="edu.bupt.display.AtuserCircle"%>
 <%@ page import="edu.bupt.display.ExecuteShell"%>
 <%@ page import="edu.bupt.jdbc.UpdateOperation"%>
 <%@ page import="edu.bupt.jdbc.SelectOperation"%>
+<%@ page import="edu.bupt.jdbc.SQLHelper"%>
 <%@ include file="../inc/conn.jsp"%> 
 <%
 	String userID = request.getParameter("uid")!=null?request.getParameter("uid"):"";
 	String mainUser = request.getParameter("alias")!=null?request.getParameter("alias"):"";
+	String intime = request.getParameter("intime")!=null?request.getParameter("intime"):"";
+	String query = request.getParameter("query")!=null?request.getParameter("query"):"";
+	
 	JSONObject jsonObjAll = new JSONObject();
 	JSONObject cateObject = new JSONObject();
-	
-	//String allCate = "USERID,USERALIAS,LOCATION,SEX,BRIEF";
-	//String cateChinese = "用户ID,昵称,住址,性别,简介";
+	JSONObject id_name_Object = new JSONObject();
+	long currentTimeStamp = 0;  //当前爬取时间戳
+	long lastTimeStamp = 0;     //上一次爬取时间戳
+	final long timeThreshold = 12*3600000*20; //两次爬取时间间隔大于12*60分钟
 	String allCate = "USERID,USERALIAS,LOCATION,SEX,BIRTHDAY,BRIEF,DOMAIN,BLOG";
 	String cateChinese = "用户ID,昵称,住址,性别,生日,简介,个人域名,博客";
 	String[] cateList = allCate.split(",");
 	String[] cateChineseList=cateChinese.split(",");
 	HashMap<String,String> userInfoCateMap = new HashMap<String,String>();
 	userInfoCateMap = basicFun.cateMapBuild(cateList,cateChineseList);
-	session.setAttribute("userID", userID);
 	ResultSet rs1 = null;
-	HashMap<String,ArrayList<HashMap<String,String>>> realationMap = null;
+	HashMap<String,ArrayList<HashMap<String,String>>> relationMap = null;  //某用户关系的所有@用户及相应at总数(totalNumber)
 	HashMap<String,String>  userMap = null;   //用户昵称与相应at总数(totalNumber)
 	HashMap<String,Integer> userCate = null;  //用户颜色节点等级
 	HashMap<String,HashMap<String,String>>  usrInfoMap  = null;
@@ -37,34 +42,52 @@
 	ArrayList<String> idFinalArray = new ArrayList<String>();
 	
 	if(!userID.equals("")){
-		//如果主用户信息没有爬取，则爬取主用户信息
+		//如果主用户信息没有爬取，则从数据库主用户信息
 		if(mainUser.equals("")){
 			ResultSet rs = SelectOperation.selectAlias(userID, conn);
-			if(rs!=null){
-				rs.next();
+			if(rs.next()){
 				mainUser = rs.getString("userAlias");
 			}
+			else mainUser = userID;
 		}
-		if(!SelectOperation.containsField("userID", userID, "t_user_weibocontent_atuser", conn)){ //避免重新爬取
-			System.out.println("!!!!!!"+userID);
-			ExecuteShell.executeShell(userID,"weibocontent_userinfo");	//爬取用户第一层关系
-			while(true){
-					int searchstate = SelectOperation.selectEndState("contentstate",conn);
-					if(searchstate==1) break;	
-			}
-			UpdateOperation.updateEndState("contentstate");
-		}
+		
+		int perpageNum = -1;
+		long earliestTimeStamp; //数据库中该用户微博最早时间戳
+		long diffTimeStamp;
+		currentTimeStamp = System.currentTimeMillis(); //获取当前时间戳
+		lastTimeStamp = SelectOperation.selectLastSearchTime(userID,conn); //获取主用户上一次爬取时间戳,未爬取过该userID，则返回0
+		diffTimeStamp = currentTimeStamp - lastTimeStamp;  //两次爬取时间间隔
+//		if(!SelectOperation.containsField("userID", userID, "t_user_weibocontent_atuser", conn)){
+	   if(diffTimeStamp > timeThreshold && "".equals(query)){ //两次爬取时间间隔大于60分钟
+		   do{
+				System.out.println("!!!first layer user:"+userID);
+				perpageNum += 2;
+			   ExecuteShell.executeShell(userID,String.valueOf(perpageNum),"weibocontent_userinfo_intime");	//爬取用户第一层关系
+				while(true){
+						int searchstate = SelectOperation.selectEndState("contentstate",conn);
+						if(searchstate==1) break;	
+				}
+				UpdateOperation.updateEndState("contentstate"); 
+				earliestTimeStamp = SelectOperation.getEarlistTimeStamp(userID, conn); //获取最早发表时间
+//				System.out.println("earliestTimeStamp:"+earliestTimeStamp);
+			}while(currentTimeStamp - earliestTimeStamp <= 155520000); //没有满足一个月发表量
+			System.out.println("perpageNum:"+perpageNum);
+	   }
+		
+		//用户没有@用户，则插入“NullUser”
+		if(SelectOperation.checkNullAtuser(userID, conn)) SQLHelper.executeUpdate("insert into t_user_weibocontent_atuser(userID,atuser) values(?,'NullUser') ", new String[]{userID});
+		
+		rs1 = SelectOperation.selectAtuser(userID,currentTimeStamp,"5",intime,conn);  //从数据库中获取用户第二层关系
 
-		rs1 = SelectOperation.selectAtuser(userID,"5",conn);  //从数据库中获取用户第二层关系
-
-		realationMap = new HashMap<String,ArrayList<HashMap<String,String>>>();		
+		relationMap = new HashMap<String,ArrayList<HashMap<String,String>>>();		
 		userMap  = new HashMap<String,String>();
 		userCate = new HashMap<String,Integer>();  
 		usrInfoMap  = new HashMap<String,HashMap<String,String>>();  
 		ArrayList<HashMap<String,String>> list1 = new ArrayList<HashMap<String,String>>();
-		realationMap.put(mainUser,list1); 		
+		relationMap.put(mainUser,list1); 		
 		basicFun.expandInfoMap(usrInfoMap, userID, cateList, mainUser, conn);
 		
+		int perpageNum1;
 		if(rs1!=null){
 			while(rs1.next()){
 				String atuserID = rs1.getString("ATUSERID");
@@ -75,25 +98,37 @@
 					userMap.put(name1,number);
 				}					
 					
-				if(!SelectOperation.containsField("userID", atuserID, "t_user_weibocontent_atuser", conn)){  //避免重新爬取
-					System.out.println(rs1.getString("atuserID")+":"+rs1.getString("atuser"));
-					ExecuteShell.executeShell(rs1.getString("atuserID"),"weibocontent_userinfo"); //爬取用户第二层关系
-					while(true){
-						int contentstate = SelectOperation.selectEndState("contentstate",conn);
-						if(contentstate==1) break;			
-					}
-					UpdateOperation.updateEndState("contentstate");
-				}
-				basicFun.expandRelationMap(realationMap, mainUser, name1, number);
-				ResultSet rsinfotemp = SelectOperation.selectUserinfo(atuserID, conn);				
-				basicFun.expandInfoMap(usrInfoMap, cateList, name1, rsinfotemp);			
-				ResultSet rsTemp = SelectOperation.selectAtuser(atuserID,"5",conn);
+//			  if(!SelectOperation.containsField("userID", atuserID, "t_user_weibocontent_atuser", conn)){
+				perpageNum1 = -1;  //置为初始值
+				if(diffTimeStamp > timeThreshold && "".equals(query)){  //两次爬取时间间隔大于60分钟
+					do{
+						System.out.println("second layer user "+atuserID+":"+rs1.getString("atuser"));
+						perpageNum1 += 2;
+						//ExecuteShell.executeShell(rs1.getString("atuserID"),"weibocontent_userinfo"); //爬取用户第二层关系
+						ExecuteShell.executeShell(userID,String.valueOf(perpageNum1),"weibocontent_userinfo_intime");
+						while(true){
+							int contentstate = SelectOperation.selectEndState("contentstate",conn);
+							if(contentstate==1) break;			
+						}
+						UpdateOperation.updateEndState("contentstate");
+						earliestTimeStamp = SelectOperation.getEarlistTimeStamp(atuserID, conn);  //获取最早发表时间
+					}while(currentTimeStamp - earliestTimeStamp <= 155520000);  //没有满足一个月发表量
+					 System.out.println("perpageNum:"+perpageNum);
+				} 
+
+				basicFun.expandRelationMap(relationMap, mainUser, name1, number);
+				ResultSet rsinfotemp = SelectOperation.selectUserinfo(atuserID, conn);  //获取用户的基本信息				
+				basicFun.expandInfoMap(usrInfoMap, cateList, name1, rsinfotemp);	
+				
+				ResultSet rsTemp = SelectOperation.selectAtuser(atuserID, currentTimeStamp, "5", intime,conn);
 				if(rsTemp!=null){
 					while(rsTemp.next()){
 						String thirdLayerUid = rsTemp.getString("ATUSERID") ;
 						String atuser = rsTemp.getString("ATUSER");
 						String number1 = rsTemp.getString("TOTALNUMBER");
-						//ResultSet rsinfotempThird = SelectOperation.selectUserinfo(secondLayerUid, conn);	
+						
+						ResultSet rsinfotempThird = SelectOperation.selectUserinfo(thirdLayerUid, conn);	
+						
 						HashMap<String,String> mapTemp1 = new HashMap<String,String>();
 						mapTemp1.put(atuser,number1);
 						if(!userCate.containsKey(atuser)){
@@ -101,9 +136,10 @@
 						}
 						
 						userMap.put(atuser,number1);
-						if(!realationMap.containsKey(atuser)){  //the important code!
-							realationMap.get(name1).add(mapTemp1);
+						if(!relationMap.containsKey(atuser)){  //the important code!
+							relationMap.get(name1).add(mapTemp1);
 						}
+						
 						if(!usrInfoMap.containsKey(atuser)){
 							id_name_map.put(thirdLayerUid,atuser);
 							idFinalArray.add(thirdLayerUid);
@@ -117,30 +153,38 @@
 			}			
 		}
 		
-			String idFinalString = idFinalArray.toString();
-		    idFinalString = idFinalString.replaceAll("\\s","");
-			/* System.out.println("********"+idFinalString);
- 			ExecuteShell.executeShell(idFinalString,"userinfo_list"); //爬取用户第三层关系
-			while(true){
-				int userinfostate = SelectOperation.selectEndState("userinfostate",conn);
-				if(userinfostate==1) break;			
+			//当前爬取工作结束,更新"上一次爬取"时间戳
+			if(diffTimeStamp > timeThreshold){
+				UpdateOperation.mergeLastSearchTime(userID, currentTimeStamp);
 			}
-			UpdateOperation.updateEndState("userinfostate");  */
+			
+			//爬取最外层（第三层）人物节点基本信息
+			String idFinalString = idFinalArray.toString();
+			System.out.println("********originalStr"+idFinalString);
+		    
+			String filteredUidStr = Filter.filterContainedUid(idFinalArray,conn); //过滤掉已爬取过的uid
+ 			System.out.println("********filteredUidStr"+filteredUidStr);
+			
+ 			//filteredUidStr = "[2609648351,2855893887]";
+      	if(!"".equals(filteredUidStr)){ 
+				ExecuteShell.executeShell(filteredUidStr,"userinfo_list"); //爬取用户第三层基本信息
+				while(true){
+					int userinfostate = SelectOperation.selectEndState("userinfostate",conn);
+					if(userinfostate==1) break;			
+				}
+				UpdateOperation.updateEndState("userinfostate");  
+			} 
 
 		for(String id : idFinalArray){
 			 basicFun.expandInfoMap(usrInfoMap, id, cateList, id_name_map.get(id), conn);
 		 }   
 		
-/* 		String[] abc= {"2319864160"};
-		for(String id : abc){
-			 basicFun.expandInfoMap(usrInfoMap, id, cateList, id_name_map.get(id), conn);
-		 }   */
-		
 		 cateObject = basicFun.MapToJSONObj(userInfoCateMap);
 		 jsonObjAll = basicFun.MapToJSONObj(usrInfoMap);	
+		 id_name_Object = basicFun.MapToJSONObj(id_name_map);
 		// System.out.println(usrInfoMap);
 		
-	}
+	}else{}
 %>    
 <html>
 <head>
@@ -148,10 +192,76 @@
 <link rel="stylesheet" href="../css/inputstyle.css" type="text/css"/>
 <link rel="stylesheet" href="../css/table_basic.css" type="text/css"/>
 <link rel="stylesheet" href="../css/jquery.webui-popover.min.css" type="text/css"/>
-<link href="../css/bootstrap.min.css" rel="stylesheet">
+<link href="../css/bootstrap.min.css" rel="stylesheet"/>
 <script type="text/javascript" src="../js/json2.js"></script>
 <script type="text/javascript" src="../js/zfunc.js"></script>
+<script src="../jquery-2.0.3/jquery-2.0.3.min.js"></script>
+<script src="../jquery-2.0.3/jquery-2.0.3.js"></script>
+<script src="../js/map.js"></script>
 <title>用户微博人物关系分析</title>
+
+	<style type="text/css" media="screen">
+		#loadDiv {
+		position:absolute;
+		z-index:999;
+		width:expression(document.body.clientWidth);
+		height:expression(document.body.clientHeight);
+		width:100%;
+		top:700px;
+		}
+		.loadDiv-fix{width: 250px;height: 80px; line-height: 80px; position: absolute; left: 50%; margin-left: -125px; top: 50%; margin-top: -50px; background: rgba(0,0,0,0); border-radius: 6px; color: #fff; padding-left: 110px; box-sizing:border-box; font-size: 1.6rem;}
+		.loadDiv-fix .load{width: 30px; height: 30px; display: block; position: absolute; left: 70px; top: 25px; -webkit-animation:myfirst 1.5s linear infinite ;}  
+		.loadDiv-fix .loading{width: 80px; height: 80px; display: block; position: absolute; left: 10px; top: 0px;-webkit-animation:mysec 2s linear infinite ;}  
+	</style>
+	<style>
+		#menuuu{
+			position:absolute;
+			border: 1px outset #F6F6F6 !important; 
+			border-color:#FFFFFF;
+			z-index:10000; 
+			left:300px; 
+			top:200px; 
+			display:none; 
+			width:100px; 
+			height:80px; 
+			background: #CCCCCC; 
+			filter:alpha(opacity:80);
+			opacity:0.8;
+			overflow: hidden;
+			
+		}
+		#menuuu ul{
+			padding-top: 5px;
+			padding-left: 2px;
+			margin:0px;
+			list-style-type:none;
+			vertical-align:middle;
+		}
+		#menuuu ul li {
+			padding:0px;
+			margin-top:1px;
+			border-top: 1px solid #F6F6F6 !important;	
+			border-bottom: 1px outset #F6F6F6 !important;
+			border-color:#FFFFFF;
+			font-family:"微软雅黑";
+			width:96px;
+			font-size:13px;
+			vertical-align: middle;
+			text-align:center;
+		}
+		#menuuu font {
+			padding-left: 4px;
+			vertical-align:top ;
+		}
+	</style>
+	
+	<script language="javascript">		
+		document.oncontextmenu=function()  
+            {  
+               return false;  
+            } 
+	</script>
+
 </head>
 <body>
 	<form name="myForm" method="post" action="">
@@ -161,33 +271,74 @@
     		<td height="50"><div align="center" class="tableTitle"><%=mainUser%>用户微博人物关系分析</div></td>
 		</tr>
     	<tr><td>
-    		微博账号：<input type="text" name="uid" value=<%=session.getAttribute("userID") %>>
+    		微博账号：<input type="text" name="uid" value="<%=userID%>">
+    		
     		<input type="button" name="cmdQuery" class="btn_2k3" value="查询" onClick="atuserSearch();">
+    		&nbsp;&nbsp;
+    		<input type="button" name="cmdQuery" class="btn_2k3" value="近一天"  onClick="intimeSearch('day');">
+    		&nbsp;
+    		<input type="button" name="cmdQuery" class="btn_2k3" value="近一周"  onClick="intimeSearch('week');">
+    		&nbsp;
+    		<input type="button" name="cmdQuery" class="btn_2k3" value="近一月" onClick="intimeSearch('month');">
+    		&nbsp;
+    		<input type="button" name="cmdQuery" class="btn_2k3" value="全部" onClick="intimeSearch('test');">
     	</td></tr>
     	<tr><td>
-    		<div id="main" style="height:500px"></div>
+    		<div id="main" style="height:500px ;z-index:1"></div>
+    		
+    		<div id="menuuu" onMouseLeave ="this.style.display = 'none';">
+				<ul><!--右键弹出菜单-->		
+					<li id="menu_info"  onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
+						<img src="../images/menu_influence.png" /><font>人物信息</font>
+					</li>
+					<li id="menu_blood"  onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
+						<img src="../images/menu_blood.png" /><font>关系拓展</font>
+					</li>
+					<li id="menu_relation"  onMouseOver="this.style.background = '#999999';" onMouseOut="this.style.background = '#CCCCCC';">
+						<img src="../images/menu_influence.png" /><font>关系标注</font>
+					</li>					
+				</ul>
+			</div>
+   		
+    		
     	</td></tr>
+    	 <div id="loadDiv" style="display:none;">
+        <div class="loadDiv-fix">
+            <img class="load" src="../images/crawler_load.gif" />
+            <div align="center"><font size='3' color='black' >正在爬取中....</font></div>
+        </div>
+      </div>
 	</table>
 	</form>
+
 </body>
 
 <script language="javascript">
+		var loadDiv = document.getElementById('loadDiv');
+
 		function atuserSearch(){
-			document.myForm.action="";
+			document.myForm.action="atuser_circle_full.jsp?intime=all";
 			document.myForm.submit();
+		}
+		
+		function intimeSearch(intime){
+		   document.myForm.action="atuser_circle_full.jsp?query=1&intime="+intime;
+			document.myForm.submit();
+			//alert(intime);
 		}
 		
 </script>
 
-
-
-<script src="../echarts-2.2.7/build/dist/echarts.js"></script>
+<script src="../echarts-test/echarts-2.2.7/build/source/echarts.js"></script>
 <script type="text/javascript">
+		
+//the script about scrawl_sign show  
 
+		
         // 路径配置
         require.config({
             paths: {
-                echarts: '../echarts-2.2.7/build/dist'
+                echarts: '../echarts-test/echarts-2.2.7/build/dist'
             }
         });
         // 使用
@@ -238,6 +389,7 @@
                 			                {
                 			                    name: '微博二级@用户'
                 			                },
+                			                
                 			                {
                 			                    name: '微博三级@用户'
                 			                }
@@ -274,63 +426,65 @@
                 			            minRadius : 20,
                 			            maxRadius : 30,
                 			            gravity: 1.1,
+                			            
                 			            scaling: 1.1,
                 			            roam: 'move',
                 			            nodes:[
-												{category:0,name: '<%=mainUser%>',value :6},
+												{category:0,uid:1234,name: '<%=mainUser%>',value :6},
                 			                <%
-//                 			                while(rs1.next()){
-//                 			                	out.print("{category:1, name: '"+rs1.getString("ATUSER")+"',value :"+rs1.getString("TOTALNUMBER")+"},");	
-//                  			                }
 											if(userMap!=null){
 													Set<String> nameset = userMap.keySet();
-													for(String name : nameset){
+													for(String name : nameset){													
+														if(name !=null){
 														String number = userMap.get(name);
+														//out.print("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 														out.print("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
 														//System.out.println("{category:"+userCate.get(name)+",name: '"+name+"',value :"+number+"},");
+														}
+														else{System.out.println("No this user name");}
 													}
-											}else{System.out.println("No users!!!");}
+											}else{System.out.println("No Users!!!");}
                 			                %>
                 			            ],
                 			            links : [
                 			                 <%
-//                 			                 while(rs2.next()){
-//                 			                	 out.print("{source:'"+rs2.getString("ATUSER")+"',target:'"+mainUser+"（主用户）',weight:"+rs2.getString("TOTALNUMBER")+",name:'"+rs2.getString("TOTALNUMBER")+"次'},");
-//                 			                 }
-                			              if(realationMap!=null){
-	                			                 Set<String> keySet = realationMap.keySet();
+                			              if(relationMap!=null){
+	                			                 Set<String> keySet = relationMap.keySet();
 	                			                 for(String key : keySet){
-	                			                	 ArrayList<HashMap<String,String>> list = realationMap.get(key);
+	                			                	 ArrayList<HashMap<String,String>> list = relationMap.get(key);
 	                			                	 for(HashMap<String,String>  maptemp : list){
 	                			                		String name = maptemp.keySet().iterator().next();
-	                			                	 	//out.print("{source:'"+name+"',target:'"+key+"',weight:"+maptemp.get(name)+",name:'"+maptemp.get(name)+"次'},");	
-	                			                	 	out.print("{source:'"+name+"',target:'"+key+"',weight:"+maptemp.get(name)+",name:'"+maptemp.get(name)+"次'"+",itemStyle:{normal:{width:"+maptemp.get(name)+"}}"+"},");	
-	                			                	 	//System.out.println("{source:"+name+",target: '"+key+"',weight :"+userMap.get(name)+"},");
+	                			                	 	//console.log("{source:'"+name+"',target:'"+key+"',weight:"+maptemp.get(name)+",name:'"+maptemp.get(name)+"次'"+",itemStyle:{normal:{width:"+maptemp.get(name)+"}}},");
+	                			                	 	out.print("{source:'"+name+"',target:'"+key+"',weight:"+maptemp.get(name)+",name:'"+maptemp.get(name)+"次'"+",itemStyle:{normal:{width:"+maptemp.get(name)+"}}},");	
+	                			                	 	//System.out.println("{source:'"+name+"',target:'"+key+"',weight:"+maptemp.get(name)+",name:'"+maptemp.get(name)+"次'"+",itemStyle:{normal:{width:"+maptemp.get(name)+"}}},");
 	                			                	 }
 	                			                 }
-											}//else{System.out.println("No Users!!!");}
+											}else{System.out.println("No Users!!!");}
                 			                 %>                			                                 			                
                 			            ]
                 			        }
                 			    ]
-
                 };
-                 
+                
+                var willShow; //右键点击待查询的用户昵称
+                var willShowUid;
+                var cateOfWillShow;
                 myChart.setOption(option); // 为echarts对象加载数据
                 var ecConfig = require('echarts/config');
                 var jsonObj = <%=jsonObjAll%>           
                 var cateObj =<%=cateObject%>
+                	
+                var id_name_Obj = <%=id_name_Object%>
+                //console.log(id_name_Obj);
                 var infoJson =JSON.stringify(jsonObj);
-                console.log(infoJson);
-                //var jsonObj2 = jsonObj["北邮-民航"];
-                //console.log(jsonObj2["SEX"].toString());
-                //var jsonString2 = JSON.stringify(jsonObj2);
-                //console.log(jsonString2);
+               // console.log(infoJson);
+                console.log(jsonObj);
                 var catelist1 = '<%=allCate%>'
                 var cateArray = catelist1.split(",");
                 var catenum = cateArray.length;
-              
-                function show(usrName){
+                    console.log(jsonObj);
+                	//左键点击节点，展示人物基本信息
+               function show(usrName){
         		 	var table = document.getElementById('tableContent');
         		 	if(table.style.display=='block' & table.getAttribute('usrName') == usrName){
         		 		table.setAttribute('style',"display:none;width:300px;position:relative; top:30%; left:10%;");		 		
@@ -355,41 +509,284 @@
         		 		table.setAttribute('style',"display:block;width:300px;position:absolute; top:30%; left:10%;");
         		 	}        		 	
         		 }
+          
+           function focus(param) {       
+             	console.log(param);
+               var data = param.data;
                
-                function focus(param) {                	
-                    var data = param.data;
-                    var links = option.series[0].links;
-                    var nodes = option.series[0].nodes;
+               var links = option.series[0].links;
+               var nodes = option.series[0].nodes;
+               console.log(option.series[0].nodes);
+               var event = param.event;
+					var pageX = event.pageX;
+					var pageY = event.pageY;
+					var menu = document.getElementById("menuuu");
+                    
                     if (
                         data.source !== undefined
                         && data.target !== undefined
-                    ) { //点击的是边                   	
+                    ){ //点击的是边                   	
                         var sourceNode = nodes.filter(function (n) {return n.name == data.source})[0];
                         var targetNode = nodes.filter(function (n) {return n.name == data.target})[0];
                         console.log("选中了边 " + sourceNode.name + ' -> ' + targetNode.name + ' (' + data.weight + ')');
                     } else { // 点击的是点
-                        console.log("选中了" + data.name + '(' + data.value + ')');
-                    	
-                    	show(data.name,catenum);
+                    	//alert("dashabi");
+                    		cateOfWillShow = data.category;
+                    	console.log("[[[[[[[]]]]]]]"+data.uid);
+                     console.log("选中了" + data.name + '(' + data.value + ')');
+                    	//show(data.name,catenum);
                     	var info = '<%=usrInfoMap%>';
                     	var uidlist = '<%=usrInfoMap.keySet()%>';
-                    	/* console.log(uidlist);
-                    	console.log("uuuuuuuuuuuuuuu"+uidlist.length);
-                    	for(var id in uidlist){
-                    		console.log("XXXXXXX"+uidlist[id]);                  
-                    	}  */
-                    	option.series[0].nodes.push({category:2,name: 'dsb',value :1});
-                    	myChart.setOption(option); 
-						console.log("123");
+						//option.series[0].nodes.push({category:2,name: 'dsb',value :1});
 						console.log(option.series[0].nodes);
                     }
                 }
+                
+               //判断是否存在双向link
+           function contains_reverse_link(option,cur_link){
+        	   	var cur_source = cur_link["source"];
+        	      var cur_target = cur_link["target"];
+        	       var link_set  = option.series[0].links;
+        	        for(var i = 0;i<link_set.length;i++){
+        	        	   	//存在反向link
+        	        		if(link_set[i]["source"] == cur_target && link_set[i]["target"] == cur_source){
+        	        		   return true;
+        	        	   }
+        	        }
+        	      return false;
+          		 }
+            //show usr_info
+           $(function(){
+   			$("#menu_info").click(function(param){
+   				var alias = encodeURI(willShow);
+   				alias = encodeURI(alias);
+   				//var alias = willShow;
+   				var data  = {'alias':alias}
+   				//异步从后台请求数据，右键单击展示人物基本信息
+   					$.ajax({
+   						async:true,
+   						url:"/weiboanalysis/interface/query_userinfo.jsp?",
+   						type:'GET',
+   						dataType:'text',
+   						data:data,
+   						success:function(text){
+   							 loadDiv.style.display='none';
+   							 //alert(text);
+   							var JsonString = trim(text);
+   							if(JsonString != "co_verify"){
+   								console.log(text);
+									var content = document.getElementById('tableContent').innerHTML;
+									content="<table class="+"'table'"+"><thead><tr ><th>"+"基   本   信   息"+"</th></tr></thead><tbody>";  
+									var table = document.getElementById('tableContent');
+		        		 			table.setAttribute('usrName', alias);        		 		
+									var JsonObj = JSON.parse(JsonString);
+									if(JsonObj != null){
+										for(var key in JsonObj){
+											var htmlStr = "<tr><td style='width:100px'>"+key+"："+"</td><td><B>"+JsonObj[key]+"</B></td></tr>";
+											content = content + htmlStr;
+										}
+										content = content + "</tbody></table>";
+									 	document.getElementById('tableContent').innerHTML=content;
+										table.setAttribute('style',"display:block;width:300px;position:absolute; top:30%; left:10%;");
+									}else{
+											console.log("no info");
+										}   							
+   							}else{
+   								var content = document.getElementById('tableContent').innerHTML;
+									content="<table class="+"'table'"+"><thead><tr ><th>"+"这是一个公共账号"+"</th></tr></thead><tbody>";  
+									var table = document.getElementById('tableContent');
+									table.setAttribute('usrName', alias);
+									content = content + "</tbody></table>";
+									document.getElementById('tableContent').innerHTML=content;
+									table.setAttribute('style',"display:block;width:300px;position:absolute; top:30%; left:10%;");
+   								}
+								
+   							},
+   						error:function(){
+   							alert("不通-人物基本信息");
+   						}
+   					});
+   				});
+   			})
+   		//	var isThisUserExpaned = false;
+   			var m = new Map();
+   			
+               $(function(){
+        			$("#menu_blood").click(function(param){       				
+        				loadDiv.style.display='block';
+        				console.log(loadDiv.style.display);
+        				var alias = encodeURI(willShow);
+        				alias = encodeURI(alias);
+        				var currentTimeStamp = <%=currentTimeStamp%>;
+        				var inTime = '<%=intime%>';
+        				var data = {'alias':alias,'crawl':0,'currentTimeStamp':currentTimeStamp,'inTime':inTime}
+        				//异步从后台请求数据，右键单击扩展人物关系
+        					$.ajax({
+        						async:true,
+        						url:"/weiboanalysis/interface/friendcircle_expand.jsp?",
+        						type:'GET',
+        						dataType:'text',
+        						data:data,
+        						success:function(text){
+        							loadDiv.style.display='none';
+         							if(trim(text)=="0"){
+         								alert("该用户暂无@好友信息");
+         							}
+         							console.log(text);
+        							var JsonString = text;
+        							var JsonObj = JSON.parse(JsonString);
+        							if(JsonObj != null){
+	        							var JsonNodeObj = JsonObj['nodes'];
+	        							var JsonLinkObj = JsonObj['links'];
+	        							if(JsonNodeObj != null){
+	        								for(var i=0;i<JsonNodeObj.length;i++){
+	            								var cur_node = JsonNodeObj[i];
+	            								    //避免双向链接
+	          									var isExist = option.series[0].nodes.indexOf(cur_node,0);
+	          									if(isExist != -1) continue;
+	            								option.series[0].nodes.push(cur_node);
+	        								}
+	        								myChart.setOption(option);
+	        								
+	        								for(var i=0;i<JsonLinkObj.length;i++){
+	            								var cur_link = JsonLinkObj[i];     
+	            								if(contains_reverse_link(option,cur_link) == false){
+	            									option.series[0].links.push(cur_link);
+	            								}        								
+	            								//console.log("*******"+"source: "+cur_link["source"]+"target: "+cur_link["target"]);
+	            								myChart.setOption(option);          								
+	            								console.log(option.series[0].links);        								
+	            							}
+	        								
+	        							}else{
+	        								console.log("no friends");
+	        							}
+	        							m.remove(alias);
+	        							m.put(alias,true);
+	        							console.log("**********");
+	        							console.log(m);
+        							}
+        						},
+        						error:function(){
+        							alert("不通-扩展人物关系");
+        						}
+        					});
+        				});
+        			})
+        			 $(function(){
+        			$("#menu_relation").click(function(param){
+        				var alias = encodeURI(willShow);
+        				alias = encodeURI(alias);    
+        				var currentTimeStamp = <%=currentTimeStamp%>;
+        				var inTime = '<%=intime%>';
+        				var data = {'alias':alias,'currentTimeStamp':currentTimeStamp,'inTime':inTime}
+        				//异步从后台请求数据，右键单击绘制标注关系
+        					$.ajax({
+        						async:true,
+        						url:"/weiboanalysis/interface/relation_expand.jsp?",
+        						type:'GET',
+        						dataType:'text',
+        						data:data,
+        						success:function(text){
+        							
+        						//alert(text);
+        						console.log(text);
+        							loadDiv.style.display='none';
+         							if(trim(text)=="0"){
+         								alert("该用户暂无@好友信息");
+         							}
+        							var JsonString = text;
+        							console.log(text);
+        							var JsonObj = JSON.parse(JsonString);
+        							var len = option.series[0].links.length;
+        							/* if(isThisUserExpaned == false){
+	        							for(var i=0;i<len;i++){
+	        								if(option.series[0].links[i]['source'] == willShow){
+	        									isThisUserExpaned = true;
+	        									break;
+	        								}
+	        							}
+        							} */
+        							var isThisUserExpaned = m.get(alias);
+        							console.log(isThisUserExpaned);
+        							console.log("catecatecate");
+        							console.log(cateOfWillShow);
+        							if(isThisUserExpaned == true || cateOfWillShow==0 ||cateOfWillShow==1 ){
+	        							if(JsonObj != null){
+		        							var JsonRelaObj = JsonObj[willShow];
+		        							console.log(JsonRelaObj);
+		        							if(JsonRelaObj != null){	        								
+		        								 for(var i=0;i<JsonRelaObj.length;i++){       								 
+		            								var cur_Rela = JsonRelaObj[i];            								
+		            								for(var key in cur_Rela){ 
+		            									var cur_value = cur_Rela[key];           									
+	           										   var len = option.series[0].links.length;
+		            									console.log(len)
+	           										  	 for(var j = 0 ;j<len;j++){           										  	
+	           										  		if(option.series[0].links[j]['source'] == key && option.series[0].links[j]['target'] == willShow
+	           										  				|| option.series[0].links[j]['target'] == key && option.series[0].links[j]['source'] == willShow){
+
+			           										  		console.log(option.series[0].links[j]);  
+			     										  				console.log(option.series[0].links[j]['itemStyle']);        										  		
+			     										  			   console.log("find key: " + key);		     										  		
+			           										  		option.series[0].links[j]['itemStyle']['normal']['text'] = cur_value;
+			           										  		option.series[0].links[j]['itemStyle']['normal']['brushType'] = 'stroke';
+			           										  		option.series[0].links[j]['itemStyle']['normal']['lineWidth'] = 2;
+			           										 		option.series[0].links[j]['itemStyle']['normal']['shadowColor'] = '#333333';
+			           												option.series[0].links[j]['itemStyle']['normal']['textPosition'] = 'inside';
+			           												option.series[0].links[j]['itemStyle']['normal']['textFont'] = 'normal 12px 宋体';
+			           												option.series[0].links[j]['itemStyle']['normal']['strokeColor'] = 'yellow';     										  			   	
+	     										  			   		break;
+	           										  			}  								  			
+	           										  		}	
+	           										  		console.log("now the links : " );
+	           										  		console.log(option.series[0].links);	            										     	            									            								
+		            									}            								
+		        								}
+		        								myChart.setOption(option);  
+		        								console.log(option.series[0].links);
+		        							}else{
+		        								console.log("no friends");
+		        							}
+	        							}
+        							}else{
+        								alert("请先拓展关系");
+        							}
+        						},
+        						error:function(){
+        							alert("不通-标注关系");
+        						}
+        					});
+        				});
+        			})
+        			
+        			
+                function rightBt(param){
+                	var data = param.data;
+                	willShow = data.name;
+                		cateOfWillShow = data.category;
+                	//willShowUid = data.
+						//console.log(""+id_name_Obj[willShow]);
+						var menu = document.getElementById("menuuu");
+						var event = param.event;
+						var pageX = event.pageX;
+						var pageY = event.pageY;
+						menu.style.left = pageX + 'px';
+						menu.style.top = pageY + 'px';
+						menu.style.display = "block";
+					
+				}
+                
                 myChart.on(ecConfig.EVENT.CLICK, focus)
                 myChart.on(ecConfig.EVENT.FORCE_LAYOUT_END, function () {
                     console.log(myChart.chart.force.getPosition());
                 });
+                
+                myChart.on(ecConfig.EVENT.CONTEXTMENU, rightBt);
+                myChart.setOption(option);  
             }
         );
+       
     </script>
 </html>
 <%@ include file="../inc/conn_close.jsp"%>

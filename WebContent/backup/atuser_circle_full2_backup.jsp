@@ -10,22 +10,26 @@
 <%@ page import="edu.bupt.display.ExecuteShell"%>
 <%@ page import="edu.bupt.jdbc.UpdateOperation"%>
 <%@ page import="edu.bupt.jdbc.SelectOperation"%>
+<%@ page import="edu.bupt.jdbc.SQLHelper"%>
 <%@ include file="../inc/conn.jsp"%> 
 <%
 	String userID = request.getParameter("uid")!=null?request.getParameter("uid"):"";
 	String mainUser = request.getParameter("alias")!=null?request.getParameter("alias"):"";
+	String intime = request.getParameter("intime")!=null?request.getParameter("intime"):"";
+	String query = request.getParameter("query")!=null?request.getParameter("query"):"";
+
 	JSONObject jsonObjAll = new JSONObject();
 	JSONObject cateObject = new JSONObject();
 	JSONObject id_name_Object = new JSONObject();
-	//String allCate = "USERID,USERALIAS,LOCATION,SEX,BRIEF";
-	//String cateChinese = "用户ID,昵称,住址,性别,简介";
+	long currentTimeStamp = 0;  //当前爬取时间戳
+	long lastTimeStamp = 0;     //上一次爬取时间戳
+	long timeThreshold = 3600000*12*7; //两次爬取时间间隔大于12*60分钟
 	String allCate = "USERID,USERALIAS,LOCATION,SEX,BIRTHDAY,BRIEF,DOMAIN,BLOG";
 	String cateChinese = "用户ID,昵称,住址,性别,生日,简介,个人域名,博客";
 	String[] cateList = allCate.split(",");
 	String[] cateChineseList=cateChinese.split(",");
 	HashMap<String,String> userInfoCateMap = new HashMap<String,String>();
 	userInfoCateMap = basicFun.cateMapBuild(cateList,cateChineseList);
-	//session.setAttribute("userID", userID);
 	ResultSet rs1 = null;
 	HashMap<String,ArrayList<HashMap<String,String>>> realationMap = null;  //某用户关系的所有@用户及相应at总数(totalNumber)
 	HashMap<String,String>  userMap = null;   //用户昵称与相应at总数(totalNumber)
@@ -46,14 +50,32 @@
 			else mainUser = userID;
 		}
 		
-		ExecuteShell.executeShell(userID,"weibocontent_userinfo");	//爬取用户第一层关系
-		while(true){
-				int searchstate = SelectOperation.selectEndState("contentstate",conn);
-				if(searchstate==1) break;	
-		}
-		UpdateOperation.updateEndState("contentstate");
-
-		rs1 = SelectOperation.selectAtuser(userID,"5",conn);  //从数据库中获取用户第二层关系
+		int perpageNum = -1;
+		long earliestTimeStamp;
+		long diffTimeStamp;
+		currentTimeStamp = System.currentTimeMillis(); //获取当前时间戳
+		lastTimeStamp = SelectOperation.selectLastSearchTime(userID,conn); //获取主用户上一次爬取时间戳
+//		if(!SelectOperation.containsField("userID", userID, "t_user_weibocontent_atuser", conn)){
+	   if("".equals(query)){ 
+		   do{
+				System.out.println("!!!first layer user:"+userID);
+				perpageNum += 2;
+			   ExecuteShell.executeShell(userID,String.valueOf(perpageNum),"weibocontent_userinfo_intime");	//爬取用户第一层关系
+				while(true){
+						int searchstate = SelectOperation.selectEndState("contentstate",conn);
+						if(searchstate==1) break;	
+				}
+				UpdateOperation.updateEndState("contentstate"); 
+				earliestTimeStamp = SelectOperation.getEarlistTimeStamp(userID, conn); //获取最早发表时间
+//				System.out.println("earliestTimeStamp:"+earliestTimeStamp);
+			}while(currentTimeStamp - earliestTimeStamp <= 155520000); //没有满足一个月发表量
+			System.out.println("perpageNum:"+perpageNum);
+	   }
+		
+		//用户没有@用户，则插入“NullUser”
+		if(SelectOperation.checkNullAtuser(userID, conn)) SQLHelper.executeUpdate("insert into t_user_weibocontent_atuser(userID,atuser) values(?,'NullUser') ", new String[]{userID});
+		
+		rs1 = SelectOperation.selectAtuser(userID,String.valueOf(currentTimeStamp),"5",intime,conn);  //从数据库中获取用户第二层关系
 
 		realationMap = new HashMap<String,ArrayList<HashMap<String,String>>>();		
 		userMap  = new HashMap<String,String>();
@@ -63,6 +85,7 @@
 		realationMap.put(mainUser,list1); 		
 		basicFun.expandInfoMap(usrInfoMap, userID, cateList, mainUser, conn);
 		
+		int perpageNum1;
 		if(rs1!=null){
 			while(rs1.next()){
 				String atuserID = rs1.getString("ATUSERID");
@@ -73,18 +96,29 @@
 					userMap.put(name1,number);
 				}					
 					
-				System.out.println(rs1.getString("atuserID")+":"+rs1.getString("atuser"));
-				ExecuteShell.executeShell(rs1.getString("atuserID"),"weibocontent_userinfo"); //爬取用户第二层关系
-				while(true){
-					int contentstate = SelectOperation.selectEndState("contentstate",conn);
-					if(contentstate==1) break;			
-				}
-				UpdateOperation.updateEndState("contentstate");
+//			  if(!SelectOperation.containsField("userID", atuserID, "t_user_weibocontent_atuser", conn)){
+				perpageNum1 = -1;  //置为初始值
+				if("".equals(query)){  
+					do{
+						System.out.println("second layer user "+atuserID+":"+rs1.getString("atuser"));
+						perpageNum1 += 2;
+						//ExecuteShell.executeShell(rs1.getString("atuserID"),"weibocontent_userinfo"); //爬取用户第二层关系
+						ExecuteShell.executeShell(userID,String.valueOf(perpageNum1),"weibocontent_userinfo_intime");
+						while(true){
+							int contentstate = SelectOperation.selectEndState("contentstate",conn);
+							if(contentstate==1) break;			
+						}
+						UpdateOperation.updateEndState("contentstate");
+						earliestTimeStamp = SelectOperation.getEarlistTimeStamp(atuserID, conn);  //获取最早发表时间
+					}while(currentTimeStamp - earliestTimeStamp <= 155520000);  //没有满足一个月发表量
+					 System.out.println("perpageNum:"+perpageNum);
+				} 
 
 				basicFun.expandRelationMap(realationMap, mainUser, name1, number);
 				ResultSet rsinfotemp = SelectOperation.selectUserinfo(atuserID, conn);  //获取用户的基本信息				
-				basicFun.expandInfoMap(usrInfoMap, cateList, name1, rsinfotemp);			
-				ResultSet rsTemp = SelectOperation.selectAtuser(atuserID,"5",conn);
+				basicFun.expandInfoMap(usrInfoMap, cateList, name1, rsinfotemp);	
+				
+				ResultSet rsTemp = SelectOperation.selectAtuser(atuserID, String.valueOf(currentTimeStamp),"5",intime,conn);
 				if(rsTemp!=null){
 					while(rsTemp.next()){
 						String thirdLayerUid = rsTemp.getString("ATUSERID") ;
@@ -114,6 +148,7 @@
 			}			
 		}
 		
+			
 			String idFinalString = idFinalArray.toString();
 		   idFinalString = idFinalString.replaceAll("\\s","");
 		    
@@ -130,18 +165,12 @@
 			 basicFun.expandInfoMap(usrInfoMap, id, cateList, id_name_map.get(id), conn);
 		 }   
 		
-/* 		String[] abc= {"2319864160"};
-		for(String id : abc){
-			 basicFun.expandInfoMap(usrInfoMap, id, cateList, id_name_map.get(id), conn);
-		 }   */
-		
 		 cateObject = basicFun.MapToJSONObj(userInfoCateMap);
 		 jsonObjAll = basicFun.MapToJSONObj(usrInfoMap);	
 		 id_name_Object = basicFun.MapToJSONObj(id_name_map);
 		// System.out.println(usrInfoMap);
 		
-	}else{
-	}
+	}else{}
 %>    
 <html>
 <head>
@@ -228,7 +257,14 @@
 		</tr>
     	<tr><td>
     		微博账号：<input type="text" name="uid" value="<%=userID%>">
+    		
     		<input type="button" name="cmdQuery" class="btn_2k3" value="查询" onClick="atuserSearch();">
+    		&nbsp;&nbsp;
+    		<input type="button" name="cmdQuery" class="btn_2k3" value="近一天"  onClick="intimeSearch('day');">
+    		&nbsp;
+    		<input type="button" name="cmdQuery" class="btn_2k3" value="近一周"  onClick="intimeSearch('week');">
+    		&nbsp;
+    		<input type="button" name="cmdQuery" class="btn_2k3" value="近一月" onClick="intimeSearch('month');">
     	</td></tr>
     	<tr><td>
     		<div id="main" style="height:500px ;z-index:1"></div>
@@ -261,9 +297,16 @@
 		var loadDiv = document.getElementById('loadDiv');
 
 		function atuserSearch(){
-			document.myForm.action="atuser_circle_full2.jsp";
+			document.myForm.action="atuser_circle_full2.jsp?intime=week";
 			document.myForm.submit();
 		}
+		
+		function intimeSearch(intime){
+		   document.myForm.action="atuser_circle_full2.jsp?query=1&intime="+intime;
+			document.myForm.submit();
+			//alert(intime);
+		}
+		
 </script>
 
 <script src="../echarts-test/echarts-2.2.7/build/source/echarts.js"></script>
@@ -424,7 +467,7 @@
                 var catelist1 = '<%=allCate%>'
                 var cateArray = catelist1.split(",");
                 var catenum = cateArray.length;
-              
+                    console.log(jsonObj);
                 	//点击节点，展示人物基本信息
                function show(usrName){
         		 	var table = document.getElementById('tableContent');
@@ -453,7 +496,7 @@
         		 }
           
            function focus(param) {       
-           	console.log(param);
+             	console.log(param);
                var data = param.data;
                
                var links = option.series[0].links;
@@ -467,13 +510,14 @@
                     if (
                         data.source !== undefined
                         && data.target !== undefined
-                    ) { //点击的是边                   	
+                    ){ //点击的是边                   	
                         var sourceNode = nodes.filter(function (n) {return n.name == data.source})[0];
                         var targetNode = nodes.filter(function (n) {return n.name == data.target})[0];
                         console.log("选中了边 " + sourceNode.name + ' -> ' + targetNode.name + ' (' + data.weight + ')');
                     } else { // 点击的是点
+                    	//alert("dashabi");
                     	console.log("[[[[[[[]]]]]]]"+data.uid);
-                        console.log("选中了" + data.name + '(' + data.value + ')');
+                     console.log("选中了" + data.name + '(' + data.value + ')');
                     	show(data.name,catenum);
                     	var info = '<%=usrInfoMap%>';
                     	var uidlist = '<%=usrInfoMap.keySet()%>';
@@ -522,13 +566,13 @@
         						data:data,
         						success:function(text){
         							loadDiv.style.display='none';
-       							 //console.log(loadDiv.style.display);
-        							if(trim(text)=="0"){
-        								alert("该用户暂无@好友信息");
-        							}
-       							var JsonString = text;
-       							var JsonObj = JSON.parse(JsonString);
-       							if(JsonObj != null){
+        							 //console.log(loadDiv.style.display);
+         							if(trim(text)=="0"){
+         								alert("该用户暂无@好友信息");
+         							}
+        							var JsonString = text;
+        							var JsonObj = JSON.parse(JsonString);
+        							if(JsonObj != null){
 	        							var JsonNodeObj = JsonObj['nodes'];
 	        							var JsonLinkObj = JsonObj['links'];
 	        							if(JsonNodeObj != null){
@@ -553,8 +597,8 @@
 	        							}else{
 	        								console.log("no friends");
 	        							}
-       							}
-       						},
+        							}
+        						},
         						error:function(){
         							alert("不通");
         						}
@@ -564,7 +608,6 @@
                 function rightBt(param){
                 	var data = param.data;
                 	willShow = data.name;
-						console.log("(((((((((())))))))))"+id_name_Obj[willShow]);
 						var menu = document.getElementById("menuuu");
 						var event = param.event;
 						var pageX = event.pageX;

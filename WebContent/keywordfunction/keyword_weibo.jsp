@@ -33,10 +33,10 @@
 	<tbody>
 		<%
 		if(!userID.equals("")){
-			if(!SelectOperation.containsField("userID", userID, "t_user_weibocontent", conn)) {
+			if(!SelectOperation.containsField("USERID", userID, "t_user_weibocontent", conn)) {
 				ExecuteShell.executeShell(userID,"keyweibocontent");
 				while(true){
-					int contentstate = SelectOperation.selectEndState("contentstate",conn);
+					int contentstate = SelectOperation.selectEndState("CONTENTSTATE",conn);
 					if(contentstate==1) break;;			
 				}
 			}
@@ -47,15 +47,16 @@
 		<tr class="text-center">
 			<td><%=rs.getRow()%></td>
 			<td><%=userAlias%></td>
-			<td><%=rs.getString("content")!=null?rs.getString("content"):""%></td> 
-		    <td><%=rs.getString("publishTime")!=null?rs.getString("publishTime").substring(0, rs.getString("publishTime").lastIndexOf(':')):""%></td>  
+			<%Clob clob= rs.getClob("CONTENT");%>
+			<td><%=clob!=null?clob.getSubString((long)1, (int)clob.length()):""%></td> 
+		    <td><%=rs.getString("PUBLISHTIME")!=null?rs.getString("PUBLISHTIME").substring(0, rs.getString("PUBLISHTIME").lastIndexOf(':')):""%></td>  
 		</tr>
 		<%
 						}
 					}catch(SQLException e){
 							e.printStackTrace();
 					}finally{
-						UpdateOperation.updateEndState("contentstate");
+						UpdateOperation.updateEndState("CONTENTSTATE");
 					}
 				}
 			}
