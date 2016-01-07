@@ -45,7 +45,8 @@ function showtime () {
 	var hours = now.getHours();
 	var minutes = now.getMinutes();
 	var seconds = now.getSeconds()
-	var timeValue = now.getYear()+"年"+(now.getMonth()+1)+"月"+now.getDate()+"日 " + week +((hours >= 12) ? " 下午 " : " 上午 " );
+	//var timeValue = now.getYear()+"年"+(now.getMonth()+1)+"月"+now.getDate()+"日 " + week +((hours >= 12) ? " 下午 " : " 上午 " );
+	var timeValue = "2016年"+(now.getMonth()+1)+"月"+now.getDate()+"日 " + week +((hours >= 12) ? " 下午 " : " 上午 " );
 	timeValue += ((hours >12) ? hours -12 :hours);
 	timeValue += ((minutes < 10) ? ":0" : ":") + minutes;
 	timeValue += ((seconds < 10) ? ":0" : ":") + seconds;

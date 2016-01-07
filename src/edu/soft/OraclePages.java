@@ -41,8 +41,9 @@ public class OraclePages
     	}
     	return intRowCount;
     }
+    
     /**
-     * //计算分页的SQL语句
+     * 计算分页的SQL语句
      * @param sql   SQL语句
      * @param intRowCount	记录的总条数
      * @param intPageSize	每页的记录条数

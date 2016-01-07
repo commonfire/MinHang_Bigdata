@@ -25,7 +25,7 @@ if(zx.equals("y")){
 	</tr>
 	<tr>
 		<td>
-			<table width="604" height="309" border="0" align="center" cellpadding="0" cellspacing="0" background="images/back.jpg">
+			<table width="604" height="309" border="0" align="center" cellpadding="0" cellspacing="0" background="images/cauc_background.gif">
 				<tr>
 					<td>&nbsp;</td>
 				</tr>

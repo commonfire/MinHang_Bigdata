@@ -16,7 +16,8 @@ while(rsAlias.next()){
 }
 ArrayList<String> list=new ArrayList<String>();
 Hashtable<String,String> hashtable=new Hashtable<String,String>();
-ResultSet rs=stmt.executeQuery("select count(*) N,userid from T_USER_WEIBOCONTENT where (sysdate-TO_DATE(substr(publishtime,0,10),'YYYY-MM-DD'))<30 group by userid order by N desc");
+//ResultSet rs=stmt.executeQuery("select count(*) N,userid from T_USER_WEIBOCONTENT where (sysdate-TO_DATE(substr(publishtime,0,10),'YYYY-MM-DD'))<30 group by userid order by N desc");
+ResultSet rs=stmt.executeQuery("select count(*) N,userid from T_USER_WEIBOCONTENT where trunc(sysdate-publishtime)<30 group by userid order by N desc"); //30天内发表微博最多的前8个用户
 while(rs.next()){
 	list.add(rs.getString("userid"));
 	hashtable.put(rs.getString("userid"),rs.getString("N"));

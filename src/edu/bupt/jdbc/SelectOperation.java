@@ -8,11 +8,14 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.TransferQueue;
 
 
 public class SelectOperation {
@@ -383,7 +386,7 @@ public class SelectOperation {
 		return result;
 	}
 	
-	public static void main(String[] args) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, UnsupportedEncodingException {
    	//Connection conn = SQLHelper.getConnection();
 /*	   System.out.println(checkNullAtuser("22222", conn));
 	   //SQLHelper.executeUpdate("insert into t_user_weibocontent_atuser(userID,atuser) values(?,'NullUser') ", new String[]{"22222"});
@@ -397,8 +400,6 @@ public class SelectOperation {
 			Clob c = rs.getClob("content");
 			System.out.println(c.getSubString((long)1, (int)c.length()));
 		}*/
-		//System.out.println(selectUserProperty("喜马拉雅FM", conn));
-	//conn.close();
+		//System.out.println(selectUserPropert
 	}
-
 }

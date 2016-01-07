@@ -5,6 +5,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>微博账号地区分布</title>
+<jsp:useBean id="dt" class="edu.soft.MyString" scope="page"/>
 <link rel="stylesheet" href="../css/inputstyle.css" type="text/css"/>
 <link rel="stylesheet" href="../css/table_basic.css" type="text/css"/>
 <script type="text/javascript" src="../js/validate.js"></script>
@@ -85,9 +86,9 @@ require(
             %>
             <tr>
                 <th><%if(i<mcList.size()){out.print(mcList.get(i));}%></th>
-                <td><a href="chart_area_detail.jsp?mc=" target="_blank"><%if(i<nList.size()){out.print(nList.get(i));}%></a></td>
+                <td><a href="chart_area_detail.jsp?mc=<%if(i<mcList.size()){out.print(mcList.get(i));}%>" target="_blank"><%if(i<nList.size()){out.print(nList.get(i));}%></a></td>
                 <th><%if(i+1<mcList.size()){out.print(mcList.get(i+1));}%></th>
-                <td><a href="chart_area_detail.jsp?mc=%>" target="_blank"><%if(i+1<nList.size()){out.print(nList.get(i+1));}%></a></td>
+                <td><a href="chart_area_detail.jsp?mc=<%if(i+1<mcList.size()){out.print(mcList.get(i+1));}%>" target="_blank"><%if(i+1<nList.size()){out.print(nList.get(i+1));}%></a></td>
             </tr>
             <%}%>
         </table>

@@ -58,7 +58,6 @@ if(!userID.equals("")){
 			//获取分页的SQL语句
 			String dbsql=pages.getPageSQL(sql,intRowCount,intPageSize,intPage);
 			ResultSet rs=stmt.executeQuery(dbsql);
-			//out.print(dbsql);
 			int num=1;
 			while(rs.next()){
 			%>

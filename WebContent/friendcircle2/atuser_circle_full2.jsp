@@ -55,7 +55,7 @@
 		currentTimeStamp = System.currentTimeMillis(); //获取当前时间戳
 		lastTimeStamp = SelectOperation.selectLastSearchTime(userID,conn); //获取主用户上一次爬取时间戳,未爬取过该userID，则返回0
 //		if(!SelectOperation.containsField("userID", userID, "t_user_weibocontent_atuser", conn)){
-	   if("".equals(query)){ //两次爬取时间间隔大于60分钟
+	   if("".equals(query)){ 
 		   do{
 				System.out.println("!!!first layer user:"+userID);
 				perpageNum += 2;
@@ -97,12 +97,12 @@
 					
 //			  if(!SelectOperation.containsField("userID", atuserID, "t_user_weibocontent_atuser", conn)){
 				perpageNum1 = -1;  //置为初始值
-				if("".equals(query)){  //两次爬取时间间隔大于60分钟
+				if("".equals(query)){  
 					do{
 						System.out.println("second layer user "+atuserID+":"+rs1.getString("atuser"));
 						perpageNum1 += 2;
 						//ExecuteShell.executeShell(rs1.getString("atuserID"),"weibocontent_userinfo"); //爬取用户第二层关系
-						ExecuteShell.executeShell(userID,String.valueOf(perpageNum1),"weibocontent_userinfo_intime");
+						ExecuteShell.executeShell(atuserID,String.valueOf(perpageNum1),"weibocontent_userinfo_intime");
 						while(true){
 							int contentstate = SelectOperation.selectEndState("contentstate",conn);
 							if(contentstate==1) break;			
@@ -311,12 +311,12 @@
 		var loadDiv = document.getElementById('loadDiv');
 
 		function atuserSearch(){
-			document.myForm.action="atuser_circle_full.jsp2?intime=all";
+			document.myForm.action="atuser_circle_full2.jsp?intime=all";
 			document.myForm.submit();
 		}
 		
 		function intimeSearch(intime){
-		   document.myForm.action="atuser_circle_full.jsp2?query=1&intime="+intime;
+		   document.myForm.action="atuser_circle_full2.jsp?query=1&intime="+intime;
 			document.myForm.submit();
 			//alert(intime);
 		}

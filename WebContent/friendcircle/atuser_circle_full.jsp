@@ -105,7 +105,7 @@
 						System.out.println("second layer user "+atuserID+":"+rs1.getString("atuser"));
 						perpageNum1 += 2;
 						//ExecuteShell.executeShell(rs1.getString("atuserID"),"weibocontent_userinfo"); //爬取用户第二层关系
-						ExecuteShell.executeShell(userID,String.valueOf(perpageNum1),"weibocontent_userinfo_intime");
+						ExecuteShell.executeShell(atuserID,String.valueOf(perpageNum1),"weibocontent_userinfo_intime");
 						while(true){
 							int contentstate = SelectOperation.selectEndState("contentstate",conn);
 							if(contentstate==1) break;			
